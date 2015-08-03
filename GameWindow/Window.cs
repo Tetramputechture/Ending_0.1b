@@ -30,9 +30,6 @@ namespace Ending.GameWindow
 
         public void display()
         {
-            Sprite sprite = new Sprite(TileType.STONEFLOOR.texture);
-            sprite.Position = new Vector2f(200, 200);
-
             while (rw.IsOpen)
             {
                 InputHandler.HandleEvents(rw);
@@ -43,7 +40,6 @@ namespace Ending.GameWindow
                 rw.Clear();
                 rw.Draw(s);
 
-                rw.Draw(sprite);
                 rw.Display();
             }
         }

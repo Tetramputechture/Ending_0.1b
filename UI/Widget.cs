@@ -11,7 +11,7 @@ namespace Ending.UI
 {
     abstract public class Widget : Drawable
     {
-        public View view { get; set; }
+        public View view;
 
         virtual public void Update(int mouseX, int mouseY, bool isLeftMouseButtonPressed)
         {

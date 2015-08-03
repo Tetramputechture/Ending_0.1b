@@ -13,7 +13,7 @@ namespace Ending.SpriteTools
 
         public List<IntRect> frameBounds { get; }
 
-        public Texture spriteSheet { get; set; }
+        public Texture spriteSheet;
 
         public Animation(Texture spriteSheet)
         {

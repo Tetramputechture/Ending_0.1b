@@ -10,7 +10,7 @@ namespace Ending.GameLogic.DungeonTools
 {
     public class DungeonGenerator
     {
-        public int seed { get; set; }
+        public int seed;
 
         private Vector2i size;
 

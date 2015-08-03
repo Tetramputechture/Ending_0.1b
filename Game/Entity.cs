@@ -17,10 +17,10 @@ namespace Ending.GameLogic
         private GraphicsComponent graphics;
         private PhysicsComponent physics;
 
-        public Vector2f velocity { get; set; }
+        public Vector2f velocity;
 
-        public FloatRect entityBoundingBox { get; set; }
-        public FloatRect geometryBoundingBox { get; set; }
+        public FloatRect entityBoundingBox;
+        public FloatRect geometryBoundingBox;
 
         public Entity(InputComponent input,
             GraphicsComponent graphics,

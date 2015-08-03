@@ -113,7 +113,7 @@ namespace Ending.GameLogic.DungeonTools
             return tileData[x, y].type == tileType;
         }
 
-        public bool holdsTileType(int x, int y, TileType tileType)
+        public bool HoldsTileType(int x, int y, TileType tileType)
         {
             if (tileData[x, y].type == tileType)
             {
@@ -132,7 +132,7 @@ namespace Ending.GameLogic.DungeonTools
             return false;
         }
 
-        public bool holdsDetailType(int x, int y, TileType tileType)
+        public bool HoldsDetailType(int x, int y, TileType tileType)
         {
             if (detailData[x, y] == null)
             {
@@ -201,7 +201,7 @@ namespace Ending.GameLogic.DungeonTools
          */
         public bool IsAreaUnused(int xStart, int yStart, int xEnd, int yEnd)
         {
-            return containsOnly(xStart, yStart, xEnd, yEnd, dungeonStyle.GetUnusedTileType());
+            return ContainsOnly(xStart, yStart, xEnd, yEnd, dungeonStyle.GetUnusedTileType());
         }
 
         /**
@@ -214,7 +214,7 @@ namespace Ending.GameLogic.DungeonTools
          * @return <code>true</code> if each cell within the range Is of type
          * <code>tileType</code>, <code>false</code> otherwIse.
          */
-        public bool containsOnly(int xStart, int yStart, int xEnd, int yEnd, TileType tileType)
+        public bool ContainsOnly(int xStart, int yStart, int xEnd, int yEnd, TileType tileType)
         {
             for (int y = yStart; y <= yEnd; y++)
             {
@@ -242,8 +242,8 @@ namespace Ending.GameLogic.DungeonTools
          */
         public bool IsAdjacent(int x, int y, TileType tileType)
         {
-            return holdsTileType(x - 1, y, tileType) || holdsTileType(x + 1, y, tileType)
-                    || holdsTileType(x, y - 1, tileType) || holdsTileType(x, y + 1, tileType);
+            return HoldsTileType(x - 1, y, tileType) || HoldsTileType(x + 1, y, tileType)
+                    || HoldsTileType(x, y - 1, tileType) || HoldsTileType(x, y + 1, tileType);
         }
 
         public void AddEntity(int x, int y, Entity a)
@@ -251,7 +251,7 @@ namespace Ending.GameLogic.DungeonTools
             entityData[x, y] = a;
         }
 
-        private void compile()
+        private void Compile()
         {
             for (int x = 0; x < size.X; x++)
             {
@@ -323,7 +323,7 @@ namespace Ending.GameLogic.DungeonTools
         {
             if (!compiled)
             {
-                compile();
+                Compile();
             }
             DrawBaseTiles(rt, states);
             UpdateEntities(deltaTime, rt);

@@ -10,17 +10,17 @@ namespace Ending.SpriteTools
 {
     class AnimatedSprite : Transformable, Drawable
     {
-        public Animation animation { get; set; }
-        
-        public Time frameTime { get; set; }
+        public Animation animation;
+
+        public Time frameTime;
 
         private Time currentTime;
 
         private int currentFrame;
 
-        public bool pause { get; set; }
+        public bool pause;
 
-        public bool loop { get; set; }
+        public bool loop;
 
         private Vertex[] vertices;
 

@@ -18,7 +18,7 @@ namespace Ending.UI
 
         private Frame frame { get; }
 
-        public Action clickAction { get; set; }
+        public Action clickAction;
 
         public Color defaultTextColor;
 
