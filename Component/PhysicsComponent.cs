@@ -11,6 +11,6 @@ namespace Ending.Component
 {
     public interface PhysicsComponent
     {
-        void Update(Entity entity, Dungeon dungeon, Time deltaTime);
+        void Update(Entity entity, Dungeon dungeon);
     }
 }

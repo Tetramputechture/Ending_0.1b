@@ -14,20 +14,19 @@ namespace Ending.GameLogic
     {
         private const float SQRT2 = 1.4142135624f;
 
-        public void Update(Entity entity, Dungeon dungeon, Time deltaTime)
+        public void Update(Entity entity, Dungeon dungeon)
         {
             Vector2f pos = entity.Position;
-            Vector2f velocity = entity.velocity;
 
             FloatRect bounds = entity.geometryBoundingBox;
 
             // if entity is moving diagonally, divide vector by sqrt 2
-            if (velocity.X != 0 && velocity.Y != 0)
+            if (entity.velocity.X != 0 && entity.velocity.Y != 0)
             {
                 entity.velocity /= SQRT2;
             }
 
-            entity.Position += velocity * deltaTime.AsSeconds();
+            entity.Position += entity.velocity * Game.deltaTime.AsSeconds();
 
             // see if entity is colliding with an unpassable tile
             for (var x = 0; x < dungeon.size.X; x++)

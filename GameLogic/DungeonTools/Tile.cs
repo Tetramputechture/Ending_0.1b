@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ending.GameLogic.DungeonTools
 {
-    public class Tile : Drawable 
+    public class Tile : Drawable
     {
         public const int TILE_WIDTH = 32;
         public const int TILE_HEIGHT = 32;
@@ -34,28 +34,21 @@ namespace Ending.GameLogic.DungeonTools
             children = new Stack<Tile>();
         }
 
-        public void RotateAroundCenter(float degrees)
+        public bool Contains(TileType type)
         {
-            Vector2f center = (Vector2f) type.texture.Size / 2;
-            Vector2f rotateOrigin = sprite.Position + center;
-            
-        }
-
-        public void RotateBasedOnDirection(Direction direction)
-        {
-            switch (direction)
+            if (this.type == type)
             {
-                // door sprite is already aligned with North direction
-                case Direction.East:
-                    RotateAroundCenter(90);
-                    break;
-                case Direction.South:
-                    RotateAroundCenter(180);
-                    break;
-                case Direction.West:
-                    RotateAroundCenter(-90);
-                    break;
+                return true;
             }
+
+            foreach (Tile t in children)
+            {
+                if (t.type == type)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void SetPosition(Vector2f position)
@@ -64,6 +57,21 @@ namespace Ending.GameLogic.DungeonTools
             foreach (Tile t in children)
             {
                 t.SetPosition(position);
+            }
+        }
+
+        public void LightPass(Color color)
+        {
+            if (type.lightingEnabled)
+            {
+                sprite.Color = color;
+            }
+            foreach (Tile t in children)
+            {
+                if (t.type.lightingEnabled)
+                {
+                    t.sprite.Color = color;
+                }
             }
         }
 

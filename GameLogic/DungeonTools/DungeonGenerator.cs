@@ -40,7 +40,7 @@ namespace Ending.GameLogic.DungeonTools
             seed = (int)DateTime.Now.Ticks / (int)TimeSpan.TicksPerMillisecond;
 
             Random rand = new Random(seed);
-            
+
             size = new Vector2i(x, y);
 
             Dungeon dungeon = new Dungeon(dungeonStyle, size);
@@ -114,11 +114,9 @@ namespace Ending.GameLogic.DungeonTools
                 return false;
             }
 
-            TileType floorType = dungeon.dungeonStyle.GetFloorTileType();
+            dungeon.AddFloor(xStart, yStart, xEnd, yEnd);
 
-            dungeon.AddTiles(xStart, yStart, xEnd, yEnd, floorType);
-
-            dungeon.AddTile(doorX, doorY, floorType);
+            dungeon.AddFloor(doorX, doorY);
 
             return true;
         }
@@ -168,10 +166,8 @@ namespace Ending.GameLogic.DungeonTools
                 return false;
             }
 
-            DungeonStyle style = dungeon.dungeonStyle;
-
-            dungeon.AddTiles(xStart, yStart, xEnd, yEnd, style.GetVoidTileType());
-            dungeon.AddTiles(xStart + 1, yStart + 1, xEnd - 1, yEnd - 1, style.GetFloorTileType());
+            dungeon.AddRoof(xStart, yStart, xEnd, yEnd);
+            dungeon.AddFloor(xStart + 1, yStart + 1, xEnd - 1, yEnd - 1);
 
             return true;
         }
@@ -191,9 +187,9 @@ namespace Ending.GameLogic.DungeonTools
             {
                 if (MakeRoom(dungeon, rand, x + xmod, y + ymod, direction))
                 {
-                    TileType floorType = dungeon.dungeonStyle.GetFloorTileType();
-                    dungeon.AddTile(x, y, floorType);
-                    dungeon.AddTile(x + xmod, y + ymod, floorType);
+                    TileType floorType = dungeon.style.GetFloorTileType();
+                    dungeon.AddFloor(x, y);
+                    dungeon.AddFloor(x + xmod, y + ymod);
                     return true;
                 }
                 return false;
@@ -207,16 +203,6 @@ namespace Ending.GameLogic.DungeonTools
         private void MakeWalls(Dungeon dungeon)
         {
 
-            DungeonStyle style = dungeon.dungeonStyle;
-
-            TileType floorType = style.GetFloorTileType();
-            TileType voidType = style.GetVoidTileType();
-            TileType northWall = style.GetWallTileType(Direction.North);
-            TileType eastWall = style.GetWallTileType(Direction.East);
-            TileType westWall = style.GetWallTileType(Direction.West);
-            TileType southWall = style.GetWallTileType(Direction.South);
-
-
             // iterate across all floor tiles
             // if tile Is adjacent to a void or unused tile:
             // Push the appropriate door tile to it
@@ -224,26 +210,26 @@ namespace Ending.GameLogic.DungeonTools
             {
                 for (int x = 1; x < size.X - 1; x++)
                 {
-                    if (dungeon.holdsTileType(x, y, floorType) && dungeon.IsAdjacent(x, y, voidType))
+                    if (dungeon.HoldsFloor(x, y) && dungeon.IsAdjacentToRoof(x, y))
                     {
                         // wall on north
-                        if (dungeon.GetTileTypeEquals(x, y - 1, voidType))
+                        if (dungeon.IsRoof(x, y - 1))
                         {
-                            dungeon.AddTile(x, y - 1, northWall);
+                            dungeon.AddWall(x, y - 1, Direction.North, true);
                         }
                         // wall on east
-                        if (dungeon.GetTileTypeEquals(x + 1, y, voidType))
+                        if (dungeon.IsRoof(x + 1, y))
                         {
-                            dungeon.PushTile(x + 1, y, eastWall);
+                            dungeon.AddWall(x + 1, y, Direction.East, false);
                         }
                         // wall on west
-                        if (dungeon.GetTileTypeEquals(x - 1, y, voidType))
+                        if (dungeon.IsRoof(x - 1, y))
                         {
-                            dungeon.PushTile(x - 1, y, westWall);
+                            dungeon.AddWall(x - 1, y, Direction.West, false);
                         }
-                        if (dungeon.GetTileTypeEquals(x, y + 1, voidType))
+                        if (dungeon.IsRoof(x, y + 1))
                         {
-                            dungeon.PushDetail(x, y, southWall);
+                            dungeon.PushDetail(x, y, dungeon.style.GetWallTileType(Direction.South));
                         }
                     }
                 }
@@ -254,15 +240,15 @@ namespace Ending.GameLogic.DungeonTools
             {
                 for (int x = 1; x < size.X - 1; x++)
                 {
-                    if (dungeon.holdsTileType(x, y, northWall) && dungeon.IsAdjacent(x, y, voidType))
+                    if (dungeon.HoldsWall(x, y, Direction.North) && dungeon.IsAdjacentToRoof(x, y))
                     {
-                        if (dungeon.GetTileTypeEquals(x - 1, y, voidType))
+                        if (dungeon.IsRoof(x - 1, y))
                         {
-                            dungeon.PushTile(x - 1, y, westWall);
+                            dungeon.AddWall(x - 1, y, Direction.West, false);
                         }
-                        if (dungeon.GetTileTypeEquals(x + 1, y, voidType))
+                        if (dungeon.IsRoof(x + 1, y))
                         {
-                            dungeon.PushTile(x + 1, y, eastWall);
+                            dungeon.AddWall(x + 1, y, Direction.East, false);
                         }
                     }
                 }
@@ -272,9 +258,9 @@ namespace Ending.GameLogic.DungeonTools
         private bool MakeFeature(Dungeon dungeon, Random rand)
         {
 
-            DungeonStyle style = dungeon.dungeonStyle;
+            DungeonStyle style = dungeon.style;
 
-            TileType voidType = style.GetVoidTileType();
+            TileType voidType = style.GetRoofTileType();
             TileType floorType = style.GetFloorTileType();
 
             int MaxTries = 1000;
@@ -332,36 +318,8 @@ namespace Ending.GameLogic.DungeonTools
             return false;
         }
 
-        private bool MakeStairs(Dungeon dungeon, Random rand, TileType tileType)
-        {
-
-            DungeonStyle style = dungeon.dungeonStyle;
-
-            int MaxTries = 10000;
-
-            for (int tries = 0; tries < MaxTries; tries++)
-            {
-                int x = rand.Next(1, size.X - 2);
-                int y = rand.Next(1, size.Y - 2);
-
-                if (!(dungeon.IsAdjacent(x, y, style.GetFloorTileType())
-                        && dungeon.IsAdjacent(x, y, style.GetVoidTileType())))
-                {
-                    continue;
-                }
-
-                dungeon.AddTile(x, y, tileType);
-
-                return true;
-            }
-            return false;
-        }
-
         private bool MakeDungeon(Dungeon dungeon, Random rand)
         {
-
-            DungeonStyle style = dungeon.dungeonStyle;
-
             Stopwatch watch = new Stopwatch();
 
             watch.Start();
@@ -372,7 +330,7 @@ namespace Ending.GameLogic.DungeonTools
                 {
                     if (y == 0 || y == size.Y - 1 || x == 0 || x == size.X - 1)
                     {
-                        dungeon.AddTile(x, y, style.GetVoidTileType());
+                        dungeon.AddRoof(x, y);
                     }
                 }
             }
@@ -388,23 +346,13 @@ namespace Ending.GameLogic.DungeonTools
                 }
             }
 
-            if (!MakeStairs(dungeon, rand, style.GetUpStairsTileType()))
-            {
-                Console.WriteLine("Unable to place up stairs.");
-            }
-
-            if (!MakeStairs(dungeon, rand, style.GetDownStairsTileType()))
-            {
-                Console.WriteLine("Unable to place down stairs");
-            }
-
             for (int y = 0; y < size.Y; y++)
             {
                 for (int x = 0; x < size.X; x++)
                 {
-                    if (dungeon.GetTileTypeEquals(x, y, style.GetUnusedTileType()))
+                    if (dungeon.IsTileEmpty(x, y))
                     {
-                        dungeon.AddTile(x, y, style.GetVoidTileType());
+                        dungeon.AddRoof(x, y);
                     }
                 }
             }

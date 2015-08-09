@@ -8,16 +8,10 @@ namespace Ending.GameLogic.DungeonTools
 {
     public interface DungeonStyle
     {
-        TileType GetUnusedTileType();
-
-        TileType GetVoidTileType();
+        TileType GetRoofTileType();
 
         TileType GetWallTileType(Direction direction);
 
         TileType GetFloorTileType();
-
-        TileType GetUpStairsTileType();
-
-        TileType GetDownStairsTileType();
     }
 }

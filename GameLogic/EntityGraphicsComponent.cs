@@ -57,28 +57,28 @@ namespace Ending.GameLogic
             sprite = new AnimatedSprite(Time.FromSeconds(0.1f), true, false);
 
             south = new Animation(spriteSheet);
-            addFramesToAnimation(south, 0);
-
-            north = new Animation(spriteSheet);
-            addFramesToAnimation(north, 32);
-
-            east = new Animation(spriteSheet);
-            addFramesToAnimation(east, 64);
+            addFramesToAnimation(south, SPRITE_HEIGHT * 0);
 
             west = new Animation(spriteSheet);
-            addFramesToAnimation(west, 96);
+            addFramesToAnimation(west, SPRITE_HEIGHT * 3);
+
+            east = new Animation(spriteSheet);
+            addFramesToAnimation(east, SPRITE_HEIGHT * 2);
+
+            north = new Animation(spriteSheet);
+            addFramesToAnimation(north, SPRITE_HEIGHT * 1);
 
             northwest = new Animation(spriteSheet);
-            addFramesToAnimation(northwest, 128);
+            addFramesToAnimation(northwest, SPRITE_HEIGHT * 4);
 
             northeast = new Animation(spriteSheet);
-            addFramesToAnimation(northeast, 160);
+            addFramesToAnimation(northeast, SPRITE_HEIGHT * 5);
 
             southwest = new Animation(spriteSheet);
-            addFramesToAnimation(southwest, 192);
+            addFramesToAnimation(southwest, SPRITE_HEIGHT * 6);
 
             southeast = new Animation(spriteSheet);
-            addFramesToAnimation(southeast, 224);
+            addFramesToAnimation(southeast, SPRITE_HEIGHT * 7);
 
             currentAnimation = south;
 
@@ -96,7 +96,7 @@ namespace Ending.GameLogic
             }
         }
 
-        public void Update(Entity entity, RenderTarget target, Time deltaTime)
+        public void Update(Entity entity, RenderTarget target)
         {
             Vector2f velocity = entity.velocity;
 
@@ -158,7 +158,7 @@ namespace Ending.GameLogic
                 }
             }
 
-            sprite.Update(deltaTime);
+            sprite.Update(Game.deltaTime);
 
             sprite.Position = entity.Position;
 

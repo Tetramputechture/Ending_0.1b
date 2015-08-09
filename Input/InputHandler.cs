@@ -30,6 +30,8 @@ namespace Ending.Input
 
             rw.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyPressed);
 
+            rw.KeyReleased += new EventHandler<KeyEventArgs>(OnKeyReleased);
+
             rw.MouseMoved += new EventHandler<MouseMoveEventArgs>(OnMouseMoved);
 
             rw.MouseButtonPressed += new EventHandler<MouseButtonEventArgs>(OnMouseButtonPressed);
@@ -54,13 +56,17 @@ namespace Ending.Input
                 keysPressed.Add(e.Code);
             }
 
-            
             State.currentScreen.KeyPressed(sender, e);
+        }
+
+        private static void OnKeyReleased(object sender, KeyEventArgs e)
+        {
+            keysPressed.Remove(e.Code);
         }
 
         public static bool IsKeyPressed(Keyboard.Key key)
         {
-            return Keyboard.IsKeyPressed(key);
+            return keysPressed.Contains(key);
         }
 
         private static void OnMouseMoved(object sender, MouseMoveEventArgs e)

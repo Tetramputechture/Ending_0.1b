@@ -8,14 +8,9 @@ namespace Ending.GameLogic.DungeonTools
 {
     public class StoneDungeonStyle : DungeonStyle
     {
-        public TileType GetUnusedTileType()
+        public TileType GetRoofTileType()
         {
-            return TileType.UNUSED;
-        }
-
-        public TileType GetVoidTileType()
-        {
-            return TileType.STONEVOID;
+            return TileType.STONEROOF;
         }
 
         public TileType GetWallTileType(Direction direction)
@@ -38,16 +33,6 @@ namespace Ending.GameLogic.DungeonTools
         public TileType GetFloorTileType()
         {
             return TileType.STONEFLOOR;
-        }
-
-        public TileType GetUpStairsTileType()
-        {
-            return TileType.UPSTAIRS;
-        }
-
-        public TileType GetDownStairsTileType()
-        {
-            return TileType.DOWNSTAIRS;
         }
     }
 }

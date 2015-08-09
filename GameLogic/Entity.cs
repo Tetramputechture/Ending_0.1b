@@ -31,17 +31,17 @@ namespace Ending.GameLogic
             this.physics = physics;
         }
 
-        public void Update(RenderTarget target, Dungeon dungeon, Time deltaTime)
+        public void Update(RenderTarget target, Dungeon dungeon)
         {
             input.Update(this);
-            graphics.Update(this, target, deltaTime);
-            physics.Update(this, dungeon, deltaTime);
+            graphics.Update(this, target);
+            physics.Update(this, dungeon);
         }
 
         public static Entity CreatePlayer()
         {
             return new Entity(new PlayerInputComponent(),
-                new EntityGraphicsComponent(new Texture("sprites/player.png")),
+                new EntityGraphicsComponent(new Texture("sprites/player_shadowed.png")),
                 new EntityPhysicsComponent());
         }
 

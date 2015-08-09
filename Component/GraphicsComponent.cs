@@ -11,6 +11,6 @@ namespace Ending.Component
 {
     public interface GraphicsComponent
     {
-        void Update(Entity entity, RenderTarget target, Time deltaTime);
+        void Update(Entity entity, RenderTarget target);
     }
 }

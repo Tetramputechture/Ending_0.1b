@@ -21,5 +21,11 @@ namespace Ending.GameLogic
             FloatRect bounds = text.GetLocalBounds();
             text.Origin = new Vector2f(bounds.Left + bounds.Width / 2f, bounds.Top + bounds.Height / 2f);
         }
+
+        public static void SetOriginAtCenter(this Sprite sprite)
+        {
+            Texture t = sprite.Texture;
+            sprite.Origin = new Vector2f(t.Size.X / 2, t.Size.Y / 2);
+        }
     }
 }

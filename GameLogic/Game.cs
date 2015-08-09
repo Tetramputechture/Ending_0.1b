@@ -1,4 +1,5 @@
 ﻿using Ending.GameLogic.DungeonTools;
+using Ending.Lighting;
 using SFML.Graphics;
 using SFML.System;
 using System;
@@ -9,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Ending.GameLogic
 {
-    public class Game : Drawable
+    public class Game
     {
-        private Dungeon dungeon;
+        public Dungeon dungeon { get; private set; }
 
         private DungeonGenerator generator;
 
@@ -19,36 +20,50 @@ namespace Ending.GameLogic
 
         private Entity player;
 
-        private Clock frameClock;
+        private DynamicLight playerLight;
 
-        private Time deltaTime;
+        private static Clock frameClock;
+
+        public static Time deltaTime { get; private set; }
 
         public Game()
         {
             generator = new DungeonGenerator();
             dungeon = generator.Generate(new StoneDungeonStyle(), 40, 30);
             view = new View();
-            view.Size = new Vector2f(400, 300);
+            view.Size = new Vector2f(320, 240);
             player = Entity.CreatePlayer();
-            dungeon.AddEntity(20, 15, player);
+            initPlayer();
             frameClock = new Clock();
+        }
+
+        private void initPlayer()
+        {
+            dungeon.AddEntity(20, 15, player);
+            dungeon.lightMap.ambient = new Vector3f(0.25f, 0.25f, 0.25f);
+            playerLight = dungeon.lightMap.RequestLight();
+            playerLight.radius = 128;
+            playerLight.color = new Vector3f(0.75f, 0.75f, 0.75f);
+            playerLight.position = new Vector3f(player.Position.X, player.Position.Y, 0);
         }
 
         public void GenerateNewDungeon()
         {
             dungeon = generator.Generate(new StoneDungeonStyle(), 40, 30);
-            dungeon.AddEntity(20, 15, player);
+            initPlayer();
         }
 
         public void Update()
         {
             view.Center = player.Position;
+            dungeon.center = view.Center;
+            playerLight.position = new Vector3f(player.Position.X, player.Position.Y, 0);
             deltaTime = frameClock.Restart();
         }
 
         public void Draw(RenderTarget target, RenderStates states)
         {
-            dungeon.Update(target, states, deltaTime);
+            dungeon.Draw(target, states);
         }
     }
 }

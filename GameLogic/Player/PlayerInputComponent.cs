@@ -12,27 +12,25 @@ namespace Ending.GameLogic.Player
 {
     public class PlayerInputComponent : InputComponent
     {
-        private const int SPEED = 70;
+        private const int SPEED = 90;
 
         public void Update(Entity entity)
         {
-            Vector2f vel = entity.velocity;
-
             if (InputHandler.IsKeyPressed(Keyboard.Key.S))
             {
-                entity.velocity = new Vector2f(vel.X, vel.Y + SPEED);
+                entity.velocity.Y += SPEED;
             }
             if (InputHandler.IsKeyPressed(Keyboard.Key.A))
             {
-                entity.velocity = new Vector2f(vel.X - SPEED, vel.Y);
+                entity.velocity.X -= SPEED;
             }
             if (InputHandler.IsKeyPressed(Keyboard.Key.D))
             {
-                entity.velocity = new Vector2f(vel.X + SPEED, vel.Y);
+                entity.velocity.X += SPEED;
             }
             if (InputHandler.IsKeyPressed(Keyboard.Key.W))
             {
-                entity.velocity = new Vector2f(vel.X, vel.Y - SPEED);
+                entity.velocity.Y -= SPEED;
             }
         }
     }
