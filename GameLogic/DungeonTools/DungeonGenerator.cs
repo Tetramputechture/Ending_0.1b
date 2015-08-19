@@ -1,62 +1,58 @@
-﻿using SFML.System;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SFML.System;
 
 namespace Ending.GameLogic.DungeonTools
 {
     public class DungeonGenerator
     {
-        public int seed;
+        public int Seed;
 
-        private Vector2i size;
+        private Vector2i _size;
 
-        private Vector2i MinRoomSize;
-        private Vector2i MaxRoomSize;
+        private Vector2i _minRoomSize;
+        private Vector2i _maxRoomSize;
 
-        private int MinCorridorLength;
-        private int MaxCorridorLength;
+        private readonly int _minCorridorLength;
+        private readonly int _maxCorridorLength;
 
-        private int MaxFeatures;
+        private readonly int _maxFeatures;
 
-        private int chanceRoom;
+        private readonly int _chanceRoom;
 
         public DungeonGenerator()
         {
-            MinRoomSize = new Vector2i(4, 4);
-            MaxRoomSize = new Vector2i(8, 6);
-            MinCorridorLength = 2;
-            MaxCorridorLength = 6;
-            MaxFeatures = 200;
-            chanceRoom = 75;
+            _minRoomSize = new Vector2i(4, 4);
+            _maxRoomSize = new Vector2i(8, 6);
+            _minCorridorLength = 2;
+            _maxCorridorLength = 6;
+            _maxFeatures = 200;
+            _chanceRoom = 75;
         }
 
-        public Dungeon Generate(DungeonStyle dungeonStyle, int x, int y)
+        public Dungeon Generate(IDungeonStyle dungeonStyle, int x, int y)
         {
 
-            seed = (int)DateTime.Now.Ticks / (int)TimeSpan.TicksPerMillisecond;
+            Seed = (int)DateTime.Now.Ticks / (int)TimeSpan.TicksPerMillisecond;
 
-            Random rand = new Random(seed);
+            var rand = new Random(Seed);
 
-            size = new Vector2i(x, y);
+            _size = new Vector2i(x, y);
 
-            Dungeon dungeon = new Dungeon(dungeonStyle, size);
+            var dungeon = new Dungeon(dungeonStyle, _size);
 
             MakeDungeon(dungeon, rand);
 
             return dungeon;
         }
 
-        public Dungeon Generate(DungeonStyle dungeonStyle, int x, int y, int seed)
+        public Dungeon Generate(IDungeonStyle dungeonStyle, int x, int y, int seed)
         {
-            Random rand = new Random(seed);
+            var rand = new Random(seed);
 
-            size = new Vector2i(x, y);
+            _size = new Vector2i(x, y);
 
-            Dungeon dungeon = new Dungeon(dungeonStyle, size);
+            var dungeon = new Dungeon(dungeonStyle, _size);
 
             MakeDungeon(dungeon, rand);
 
@@ -66,12 +62,10 @@ namespace Ending.GameLogic.DungeonTools
         private bool IsValidArea(Dungeon dungeon, int xStart, int yStart, int xEnd, int yEnd)
         {
             if (!dungeon.IsXInBounds(xStart)
-                    || !dungeon.IsXInBounds(xEnd)
-                    || !dungeon.IsYInBounds(yStart)
-                    || !dungeon.IsYInBounds(yEnd))
-            {
+                || !dungeon.IsXInBounds(xEnd)
+                || !dungeon.IsYInBounds(yStart)
+                || !dungeon.IsYInBounds(yEnd))
                 return false;
-            }
 
             return dungeon.IsAreaUnused(xStart, yStart, xEnd, yEnd);
         }
@@ -85,13 +79,13 @@ namespace Ending.GameLogic.DungeonTools
                 Direction direction)
         {
 
-            int length = rand.Next(MinCorridorLength, MaxCorridorLength);
+            var length = rand.Next(_minCorridorLength, _maxCorridorLength);
 
-            int xStart = x;
-            int yStart = y;
+            var xStart = x;
+            var yStart = y;
 
-            int xEnd = x;
-            int yEnd = y;
+            var xEnd = x;
+            var yEnd = y;
 
             switch (direction)
             {
@@ -128,14 +122,14 @@ namespace Ending.GameLogic.DungeonTools
                 Direction direction)
         {
 
-            int xLength = rand.Next(MinRoomSize.X, MaxRoomSize.X);
-            int yLength = rand.Next(MinRoomSize.Y, MaxRoomSize.Y);
+            var xLength = rand.Next(_minRoomSize.X, _maxRoomSize.X);
+            var yLength = rand.Next(_minRoomSize.Y, _maxRoomSize.Y);
 
-            int xStart = x;
-            int yStart = y;
+            var xStart = x;
+            var yStart = y;
 
-            int xEnd = x;
-            int yEnd = y;
+            var xEnd = x;
+            var yEnd = y;
 
             switch (direction)
             {
@@ -181,23 +175,16 @@ namespace Ending.GameLogic.DungeonTools
                 Direction direction)
         {
 
-            int chance = rand.Next(0, 100);
+            var chance = rand.Next(0, 100);
 
-            if (chance <= chanceRoom)
-            {
-                if (MakeRoom(dungeon, rand, x + xmod, y + ymod, direction))
-                {
-                    TileType floorType = dungeon.style.GetFloorTileType();
-                    dungeon.AddFloor(x, y);
-                    dungeon.AddFloor(x + xmod, y + ymod);
-                    return true;
-                }
-                return false;
-            }
-            else
-            {
+            if (chance > _chanceRoom)
                 return MakeCorridor(dungeon, rand, x + xmod, y + ymod, x, y, direction);
-            }
+
+            if (!MakeRoom(dungeon, rand, x + xmod, y + ymod, direction)) return false;
+
+            dungeon.AddFloor(x, y);
+            dungeon.AddFloor(x + xmod, y + ymod);
+            return true;
         }
 
         private void MakeWalls(Dungeon dungeon)
@@ -206,50 +193,48 @@ namespace Ending.GameLogic.DungeonTools
             // iterate across all floor tiles
             // if tile Is adjacent to a void or unused tile:
             // Push the appropriate door tile to it
-            for (int y = 1; y < size.Y - 1; y++)
+            for (var y = 1; y < _size.Y - 1; y++)
             {
-                for (int x = 1; x < size.X - 1; x++)
+                for (var x = 1; x < _size.X - 1; x++)
                 {
-                    if (dungeon.HoldsFloor(x, y) && dungeon.IsAdjacentToRoof(x, y))
+                    if (!dungeon.HoldsFloor(x, y) || !dungeon.IsAdjacentToRoof(x, y)) continue;
+
+                    // wall on north
+                    if (dungeon.IsRoof(x, y - 1))
                     {
-                        // wall on north
-                        if (dungeon.IsRoof(x, y - 1))
-                        {
-                            dungeon.AddWall(x, y - 1, Direction.North, true);
-                        }
-                        // wall on east
-                        if (dungeon.IsRoof(x + 1, y))
-                        {
-                            dungeon.AddWall(x + 1, y, Direction.East, false);
-                        }
-                        // wall on west
-                        if (dungeon.IsRoof(x - 1, y))
-                        {
-                            dungeon.AddWall(x - 1, y, Direction.West, false);
-                        }
-                        if (dungeon.IsRoof(x, y + 1))
-                        {
-                            dungeon.PushDetail(x, y, dungeon.style.GetWallTileType(Direction.South));
-                        }
+                        dungeon.AddWall(x, y - 1, Direction.North, true);
+                    }
+                    // wall on east
+                    if (dungeon.IsRoof(x + 1, y))
+                    {
+                        dungeon.AddWall(x + 1, y, Direction.East, false);
+                    }
+                    // wall on west
+                    if (dungeon.IsRoof(x - 1, y))
+                    {
+                        dungeon.AddWall(x - 1, y, Direction.West, false);
+                    }
+                    if (dungeon.IsRoof(x, y + 1))
+                    {
+                        dungeon.PushDetail(x, y, dungeon.Style.GetWallTileType(Direction.South));
                     }
                 }
             }
 
             // Make sure north tiles are bounded on left and right by other walls
-            for (int y = 1; y < size.Y - 1; y++)
+            for (var y = 1; y < _size.Y - 1; y++)
             {
-                for (int x = 1; x < size.X - 1; x++)
+                for (var x = 1; x < _size.X - 1; x++)
                 {
-                    if (dungeon.HoldsWall(x, y, Direction.North) && dungeon.IsAdjacentToRoof(x, y))
+                    if (!dungeon.HoldsWall(x, y, Direction.North)) continue;
+
+                    if (dungeon.IsRoof(x - 1, y))
                     {
-                        if (dungeon.IsRoof(x - 1, y))
-                        {
-                            dungeon.AddWall(x - 1, y, Direction.West, false);
-                        }
-                        if (dungeon.IsRoof(x + 1, y))
-                        {
-                            dungeon.AddWall(x + 1, y, Direction.East, false);
-                        }
+                        dungeon.AddWall(x - 1, y, Direction.West, false);
+                    }
+                    if (dungeon.IsRoof(x + 1, y))
+                    {
+                        dungeon.AddWall(x + 1, y, Direction.East, false);
                     }
                 }
             }
@@ -257,36 +242,35 @@ namespace Ending.GameLogic.DungeonTools
 
         private bool MakeFeature(Dungeon dungeon, Random rand)
         {
+            var style = dungeon.Style;
 
-            DungeonStyle style = dungeon.style;
+            var voidType = style.GetRoofTileType();
+            var floorType = style.GetFloorTileType();
 
-            TileType voidType = style.GetRoofTileType();
-            TileType floorType = style.GetFloorTileType();
+            const int maxTries = 1000;
 
-            int MaxTries = 1000;
-
-            for (int tries = 0; tries < MaxTries; tries++)
+            for (var tries = 0; tries < maxTries; tries++)
             {
                 // Pick a random wall or corridor tile.
                 // Make sure it has no adjacent doors (looks weird to have doors next to each other).
                 // Find a direction from which it's reachable.
                 // Attempt to Make a feature (room or corridor) starting at thIs point.
 
-                int x = rand.Next(1, size.X - 2);
-                int y = rand.Next(1, size.Y - 2);
+                var x = rand.Next(1, _size.X - 2);
+                var y = rand.Next(1, _size.Y - 2);
 
-                TileType cellXY = dungeon.tileData[x, y].type;
-                TileType cellXPlusOneY = dungeon.tileData[x + 1, y].type;
-                TileType cellXMinusOneY = dungeon.tileData[x - 1, y].type;
-                TileType cellXYPlusOne = dungeon.tileData[x, y + 1].type;
-                TileType cellXYMinusOne = dungeon.tileData[x, y - 1].type;
+                var cellXy = dungeon.TileData[x, y].Type;
+                var cellXPlusOneY = dungeon.TileData[x + 1, y].Type;
+                var cellXMinusOneY = dungeon.TileData[x - 1, y].Type;
+                var cellXyPlusOne = dungeon.TileData[x, y + 1].Type;
+                var cellXyMinusOne = dungeon.TileData[x, y - 1].Type;
 
-                if (!(cellXY == voidType || cellXY == floorType))
+                if (!(cellXy == voidType || cellXy == floorType))
                 {
                     continue;
                 }
 
-                if (cellXYPlusOne == floorType)
+                if (cellXyPlusOne == floorType)
                 {
                     if (MakeFeature(dungeon, rand, x, y, 0, -1, Direction.North))
                     {
@@ -300,7 +284,7 @@ namespace Ending.GameLogic.DungeonTools
                         return true;
                     }
                 }
-                else if (cellXYMinusOne == floorType)
+                else if (cellXyMinusOne == floorType)
                 {
                     if (MakeFeature(dungeon, rand, x, y, 0, 1, Direction.South))
                     {
@@ -318,17 +302,17 @@ namespace Ending.GameLogic.DungeonTools
             return false;
         }
 
-        private bool MakeDungeon(Dungeon dungeon, Random rand)
+        private void MakeDungeon(Dungeon dungeon, Random rand)
         {
-            Stopwatch watch = new Stopwatch();
+            var watch = new Stopwatch();
 
             watch.Start();
 
-            for (int y = 0; y < size.Y; y++)
+            for (var y = 0; y < _size.Y; y++)
             {
-                for (int x = 0; x < size.X; x++)
+                for (var x = 0; x < _size.X; x++)
                 {
-                    if (y == 0 || y == size.Y - 1 || x == 0 || x == size.X - 1)
+                    if (y == 0 || y == _size.Y - 1 || x == 0 || x == _size.X - 1)
                     {
                         dungeon.AddRoof(x, y);
                     }
@@ -336,9 +320,9 @@ namespace Ending.GameLogic.DungeonTools
             }
 
             // Make one room in the middle to start things off.
-            MakeRoom(dungeon, rand, size.X / 2, size.Y / 2, Utils.RandDirection(rand));
+            MakeRoom(dungeon, rand, _size.X / 2, _size.Y / 2, Utils.RandDirection(rand));
 
-            for (int features = 1; features < MaxFeatures; features++)
+            for (var features = 1; features < _maxFeatures; features++)
             {
                 if (!MakeFeature(dungeon, rand))
                 {
@@ -346,9 +330,9 @@ namespace Ending.GameLogic.DungeonTools
                 }
             }
 
-            for (int y = 0; y < size.Y; y++)
+            for (var y = 0; y < _size.Y; y++)
             {
-                for (int x = 0; x < size.X; x++)
+                for (var x = 0; x < _size.X; x++)
                 {
                     if (dungeon.IsTileEmpty(x, y))
                     {
@@ -359,12 +343,10 @@ namespace Ending.GameLogic.DungeonTools
 
             MakeWalls(dungeon);
 
-            TimeSpan time = watch.Elapsed;
+            var time = watch.Elapsed;
 
             Console.WriteLine("Dungeon generated in " + time.Milliseconds / 1000f + " seconds with "
-                    + "seed " + seed);
-
-            return true;
+                    + "seed " + Seed);
         }
 
     }

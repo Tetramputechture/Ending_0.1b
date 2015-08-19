@@ -1,100 +1,81 @@
-﻿using SFML.Graphics;
-using SFML.System;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SFML.Graphics;
+using SFML.System;
 
 namespace Ending.GameLogic.DungeonTools
 {
     public class Tile : Drawable
     {
-        public const int TILE_WIDTH = 32;
-        public const int TILE_HEIGHT = 32;
+        public const int TileWidth = 32;
+        public const int TileHeight = 32;
 
-        public Sprite sprite { get; }
+        public Sprite Sprite { get; }
 
-        public TileType type { get; }
+        public TileType Type { get; }
 
-        public FloatRect globalBounds
-        {
-            get
-            {
-                return sprite.GetGlobalBounds();
-            }
-        }
+        public FloatRect GlobalBounds => Sprite.GetGlobalBounds();
 
-        public Stack<Tile> children { get; }
+        public Stack<Tile> Children { get; }
 
         public Tile(TileType type)
         {
-            this.type = type;
-            sprite = new Sprite(type.texture);
-            children = new Stack<Tile>();
+            Type = type;
+            Sprite = new Sprite(type.Texture);
+            Children = new Stack<Tile>();
         }
 
         public bool Contains(TileType type)
         {
-            if (this.type == type)
-            {
-                return true;
-            }
-
-            foreach (Tile t in children)
-            {
-                if (t.type == type)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return Type == type || Children.Any(t => t.Type == type);
         }
 
         public void SetPosition(Vector2f position)
         {
-            sprite.Position = position;
-            foreach (Tile t in children)
-            {
+            Sprite.Position = position;
+            foreach (var t in Children)
                 t.SetPosition(position);
-            }
         }
 
         public void LightPass(Color color)
         {
-            if (type.lightingEnabled)
+            if (Type.LightingEnabled)
             {
-                sprite.Color = color;
+                Sprite.Color = color;
             }
-            foreach (Tile t in children)
+
+            foreach (var t in Children.Where(t => t.Type.LightingEnabled))
             {
-                if (t.type.lightingEnabled)
-                {
-                    t.sprite.Color = color;
-                }
+                t.Sprite.Color = color;
             }
         }
 
         public void Draw(RenderTarget target, RenderStates states)
         {
-            target.Draw(sprite, states);
+            target.Draw(Sprite, states);
 
-            foreach (Tile t in children)
+            foreach (var t in Children)
             {
                 target.Draw(t, states);
             }
         }
 
-        public override bool Equals(object obj)
+        public static bool operator ==(Tile a, Tile b)
         {
-            if (obj == null || GetType() != obj.GetType())
+            // If both are null, or both are same instance, return true.
+            if (ReferenceEquals(a, b))
+                return true;
+
+            // If one is null, but not both, return false.
+            if (((object) a == null) || ((object) b == null))
             {
                 return false;
             }
 
-            Tile t = (Tile)obj;
-
-            return type == t.type && type.passable == type.passable;
+            return a.Type == b.Type;
         }
+
+        public static bool operator !=(Tile a, Tile b) => !(a == b);
+
     }
 }

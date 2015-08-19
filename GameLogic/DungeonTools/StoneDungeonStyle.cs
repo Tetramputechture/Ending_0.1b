@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Ending.GameLogic.DungeonTools
+﻿namespace Ending.GameLogic.DungeonTools
 {
-    public class StoneDungeonStyle : DungeonStyle
+    public class StoneDungeonStyle : IDungeonStyle
     {
         public TileType GetRoofTileType()
         {
-            return TileType.STONEROOF;
+            return TileType.Stoneroof;
         }
 
         public TileType GetWallTileType(Direction direction)
@@ -18,21 +12,21 @@ namespace Ending.GameLogic.DungeonTools
             switch (direction)
             {
                 case Direction.North:
-                    return TileType.STONEWALL_NORTH;
+                    return TileType.StonewallNorth;
                 case Direction.East:
-                    return TileType.STONEWALL_EAST;
+                    return TileType.StonewallEast;
                 case Direction.West:
-                    return TileType.STONEWALL_WEST;
+                    return TileType.StonewallWest;
                 case Direction.South:
-                    return TileType.STONEWALL_SOUTH;
+                    return TileType.StonewallSouth;
                 default:
-                    return TileType.STONEWALL_NORTH;
+                    return TileType.StonewallNorth;
             }
         }
 
         public TileType GetFloorTileType()
         {
-            return TileType.STONEFLOOR;
+            return TileType.Stonefloor;
         }
     }
 }

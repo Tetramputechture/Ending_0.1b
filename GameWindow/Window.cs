@@ -1,46 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Ending.GameState;
+using Ending.Input;
 using SFML.Graphics;
 using SFML.Window;
-using Ending.GameState;
-using Ending.Input;
-using Ending.GameLogic.DungeonTools;
-using SFML.System;
 
 namespace Ending.GameWindow
 {
     public class Window
     {
-        private RenderWindow rw;
+        private readonly RenderWindow _rw;
 
         public Window(string title)
         {
-            rw = new RenderWindow(new VideoMode(WindowConfig.WINDOW_WIDTH, WindowConfig.WINDOW_HEIGHT), title);
-            State.currentScreen = new MainMenuScreen();
+            _rw = new RenderWindow(new VideoMode(WindowConfig.WindowWidth, WindowConfig.WindowHeight), title);
+            State.CurrentScreen = new MainMenuScreen();
         }
 
-        public void SetView(View view)
-        {
-            rw.SetView(view);
-        }
+        public void SetView(View view) => _rw.SetView(view);
 
-        public void display()
+        public void Display()
         {
-            while (rw.IsOpen)
+            while (_rw.IsOpen)
             {
-                InputHandler.HandleEvents(rw);
+                InputHandler.HandleEvents(_rw);
 
-                Screen s = State.currentScreen;
+                var s = State.CurrentScreen;
                 s.Update();
 
-                rw.Clear();
-                rw.Draw(s);
+                _rw.Clear();
+                _rw.Draw(s);
 
-                rw.Display();
+                _rw.Display();
             }
         }
     }

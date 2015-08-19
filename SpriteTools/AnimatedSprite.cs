@@ -1,141 +1,121 @@
 ﻿using SFML.Graphics;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ending.SpriteTools
 {
     class AnimatedSprite : Transformable, Drawable
     {
-        public Animation animation;
+        public Animation Animation;
 
-        public Time frameTime;
+        public Time FrameTime;
 
-        private Time currentTime;
+        private Time _currentTime;
 
-        private int currentFrame;
+        private int _currentFrame;
 
-        public bool pause;
+        public bool Pause;
 
-        public bool loop;
+        public bool Loop;
 
-        private Vertex[] vertices;
+        private readonly Vertex[] _vertices;
 
-        public FloatRect localBounds
-        {
-            get
-            {
-                return (FloatRect)animation.frameBounds[currentFrame];
-            }
-        }
+        public FloatRect LocalBounds => (FloatRect)Animation.FrameBounds[_currentFrame];
 
-        public FloatRect globalBounds
-        {
-            get
-            {
-                return Transform.TransformRect(localBounds);
-            }
-        }
+        public FloatRect GlobalBounds => Transform.TransformRect(LocalBounds);
 
         public AnimatedSprite(Time frameTime, bool paused, bool looped)
         {
-            this.frameTime = frameTime;
-            pause = paused;
-            loop = looped;
-            vertices = new Vertex[4];
+            FrameTime = frameTime;
+            Pause = paused;
+            Loop = looped;
+            _vertices = new Vertex[4];
         }
 
         public void SetFrame(int newFrame, bool resetTime)
         {
-            if (animation != null)
+            if (Animation != null)
             {
                 // calculate new vertex positions and texture coordinates 
-                IntRect rect = animation.frames[newFrame];
+                var rect = Animation.Frames[newFrame];
 
-                Vector2f texCoordA = new Vector2f(0, 0);
-                Vector2f texCoordB = new Vector2f(0, rect.Height);
-                Vector2f texCoordC = new Vector2f(rect.Width, rect.Height);
-                Vector2f texCoordD = new Vector2f(rect.Width, 0);
+                var texCoordA = new Vector2f(0, 0);
+                var texCoordB = new Vector2f(0, rect.Height);
+                var texCoordC = new Vector2f(rect.Width, rect.Height);
+                var texCoordD = new Vector2f(rect.Width, 0);
 
-                float left = rect.Left + 0.0001f;
-                float right = left + rect.Width;
+                var left = rect.Left + 0.0001f;
+                var right = left + rect.Width;
                 float top = rect.Top;
-                float bottom = top + rect.Height;
+                var bottom = top + rect.Height;
 
-                vertices[0] = new Vertex(texCoordA, new Vector2f(left, top));
-                vertices[1] = new Vertex(texCoordB, new Vector2f(left, bottom));
-                vertices[2] = new Vertex(texCoordC, new Vector2f(right, bottom));
-                vertices[3] = new Vertex(texCoordD, new Vector2f(right, top));
+                _vertices[0] = new Vertex(texCoordA, new Vector2f(left, top));
+                _vertices[1] = new Vertex(texCoordB, new Vector2f(left, bottom));
+                _vertices[2] = new Vertex(texCoordC, new Vector2f(right, bottom));
+                _vertices[3] = new Vertex(texCoordD, new Vector2f(right, top));
             }
 
             if (resetTime)
             {
-                currentTime = Time.Zero;
+                _currentTime = Time.Zero;
             }
         }
 
         public void Update(Time deltaTime)
         {
-            if (!pause && animation != null)
+            if (Pause || Animation == null) return;
+
+            // add delta time
+            _currentTime += deltaTime;
+
+            // if current time is bigger than frame time, advance one frame
+            if (_currentTime <= FrameTime) return;
+
+            // reset time, but keep remainder
+            _currentTime = _currentTime % FrameTime;
+
+            // get next frame index
+            if (_currentFrame + 1 < Animation.Frames.Count)
             {
-                // add delta time
-                currentTime += deltaTime;
+                _currentFrame++;
+            }
+            else
+            {
+                // animation has ended
+                _currentFrame = 0;
 
-                // if current time is bigger than frame time, advance one frame
-                if (currentTime > frameTime)
+                if (!Loop)
                 {
-                    // reset time, but keep remainder
-                    currentTime = currentTime % frameTime;
-
-                    // get next frame index
-                    if (currentFrame + 1 < animation.frames.Count)
-                    {
-                        currentFrame++;
-                    }
-                    else
-                    {
-                        // animation has ended
-                        currentFrame = 0;
-
-                        if (!loop)
-                        {
-                            pause = true;
-                        }
-                    }
-
-                    SetFrame(currentFrame, false);
+                    Pause = true;
                 }
             }
+
+            SetFrame(_currentFrame, false);
         }
 
         public void Draw(RenderTarget target, RenderStates states)
         {
-            if (animation != null)
-            {
-                RenderStates newStates = new RenderStates(
-                    states.BlendMode,
-                    states.Transform * Transform,
-                    animation.spriteSheet,
-                    states.Shader);
-                target.Draw(vertices, PrimitiveType.Quads, newStates);
-            }
+            if (Animation == null) return;
+
+            var newStates = new RenderStates(
+                states.BlendMode,
+                states.Transform * Transform,
+                Animation.SpriteSheet,
+                states.Shader);
+            target.Draw(_vertices, PrimitiveType.Quads, newStates);
         }
 
         public void SetAnimation(Animation animation)
         {
-            this.animation = animation;
-            currentFrame = 0;
-            SetFrame(currentFrame, true);
+            Animation = animation;
+            _currentFrame = 0;
+            SetFrame(_currentFrame, true);
         }
 
         public void Stop()
         {
-            pause = true;
-            currentFrame = 0;
-            SetFrame(currentFrame, true);
+            Pause = true;
+            _currentFrame = 0;
+            SetFrame(_currentFrame, true);
         }
 
     }

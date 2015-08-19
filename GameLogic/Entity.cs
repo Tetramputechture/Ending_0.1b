@@ -1,49 +1,40 @@
 ﻿using Ending.Component;
-using Ending.GameLogic.DungeonTools;
 using Ending.GameLogic.Player;
 using SFML.Graphics;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ending.GameLogic
 {
     public class Entity : Transformable
     {
-        private InputComponent input;
-        private GraphicsComponent graphics;
-        private PhysicsComponent physics;
+        private readonly IInputComponent _input;
+        private readonly IGraphicsComponent _graphics;
+        private readonly IPhysicsComponent _physics;
 
-        public Vector2f velocity;
+        public Vector2f Velocity;
 
-        public FloatRect entityBoundingBox;
-        public FloatRect geometryBoundingBox;
+        public FloatRect EntityBoundingBox;
+        public FloatRect GeometryBoundingBox;
 
-        public Entity(InputComponent input,
-            GraphicsComponent graphics,
-            PhysicsComponent physics)
+        public Entity(IInputComponent input,
+            IGraphicsComponent graphics,
+            IPhysicsComponent physics)
         {
-            this.input = input;
-            this.graphics = graphics;
-            this.physics = physics;
+            _input = input;
+            _graphics = graphics;
+            _physics = physics;
         }
 
-        public void Update(RenderTarget target, Dungeon dungeon)
+        public void Update(RenderTarget target, Map map)
         {
-            input.Update(this);
-            graphics.Update(this, target);
-            physics.Update(this, dungeon);
+            _input.Update(this);
+            _graphics.Update(this, target);
+            _physics.Update(this, map);
         }
 
-        public static Entity CreatePlayer()
-        {
-            return new Entity(new PlayerInputComponent(),
-                new EntityGraphicsComponent(new Texture("sprites/player_shadowed.png")),
-                new EntityPhysicsComponent());
-        }
-
+        public static Entity CreatePlayer() => new Entity(
+            new PlayerInputComponent(),
+            new EntityGraphicsComponent(new Texture("sprites/player_shadowed.png")),
+            new EntityPhysicsComponent());
     }
 }

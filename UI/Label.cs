@@ -1,33 +1,28 @@
 ﻿using SFML.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ending.UI
 {
     public class Label : Widget
     {
-        public Text text { get; private set; }
+        public Text Text { get; }
 
         public Label(Text text)
         {
-            this.text = text;
+            Text = text;
         }
 
         public override void Draw(RenderTarget rt, RenderStates states)
         {
-            if (view != null)
+            if (View != null)
             {
-                rt.SetView(view);
-                rt.Draw(text);
+                rt.SetView(View);
+                rt.Draw(Text);
                 rt.SetView(rt.DefaultView);
             }
             else
             {
                 rt.SetView(rt.DefaultView);
-                rt.Draw(text);
+                rt.Draw(Text);
             }
         }
     }

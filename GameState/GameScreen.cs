@@ -5,95 +5,88 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Ending.GameState
 {
     public class GameScreen : Screen
     {
-        private Game game;
+        private readonly Game _game;
 
-        private View view;
+        private View _view;
 
-        private bool viewToggle;
+        private bool _viewToggle;
 
-        private bool fpsToggle;
+        private bool _fpsToggle;
 
-        private Label msFLabel;
+        private readonly Label _msFLabel;
 
         public GameScreen()
         {
-            game = new Game();
+            _game = new Game();
 
-            view = new View();
+            _view = new View();
 
             // ms / f text
-            Text msFText = new Text
+            var msFText = new Text
             {
                 Font = new Font("fonts/Quicksand-Bold.ttf"),
                 DisplayedString = " ms / frame: ",
                 Color = Color.White,
-                CharacterSize = 19,
+                CharacterSize = 19
             };
             msFText.SetOriginAtCenter();
-            msFText.Position = new Vector2f(75, WindowConfig.WINDOW_HEIGHT - 25);
+            msFText.Position = new Vector2f(75, WindowConfig.WindowHeight - 25);
 
-            msFLabel = new Label(msFText);
+            _msFLabel = new Label(msFText);
 
-            widgets.Add(msFLabel);
+            Widgets.Add(_msFLabel);
         }
 
         protected override void OnKeyPressed(object sender, KeyEventArgs e)
         {
             switch (e.Code)
             {
-                case Keyboard.Key.Space:
-                    game.GenerateNewDungeon();
-                    break;
                 case Keyboard.Key.Z:
-                    viewToggle = !viewToggle;
+                    _viewToggle = !_viewToggle;
                     break;
                 case Keyboard.Key.B:
-                    State.showEntityBoundingBoxes = !State.showEntityBoundingBoxes;
+                    State.ShowEntityBoundingBoxes = !State.ShowEntityBoundingBoxes;
                     break;
                 case Keyboard.Key.F:
-                    fpsToggle = !fpsToggle;
+                    _fpsToggle = !_fpsToggle;
                     break;
-                
+
             }
         }
 
         public override void Update()
         {
-            game.Update();
+            _game.Update();
 
-            if (viewToggle)
+            if (_viewToggle)
             {
-                view = game.view;
-            } 
+                _view = _game.View;
+            }
             else
             {
-                view = new View();
-                view.Size = new Vector2f(game.dungeon.size.X * 32, game.dungeon.size.Y * 32);
-                game.dungeon.center = new Vector2f(game.dungeon.size.X * 16, game.dungeon.size.Y * 16);
+                _view = new View
+                {
+                    Size = new Vector2f(_game.Map.Size.X * _game.Map.CellSize, _game.Map.Size.Y * _game.Map.CellSize),
+                    Center = new Vector2f(_game.Map.Size.X * (_game.Map.CellSize / 2), _game.Map.Size.Y * (_game.Map.CellSize / 2))
+                };
             }
 
-            msFLabel.text.DisplayedString = "ms / frame : " + Game.deltaTime.AsMilliseconds();
+            _msFLabel.Text.DisplayedString = "ms / frame : " + Game.DeltaTime.AsMicroseconds() / 1000f;
         }
 
         public override void Draw(RenderTarget target, RenderStates states)
         {
             target.Clear(Color.Black);
 
-            target.SetView(view);
-            game.dungeon.Draw(target, states);
-            if (fpsToggle)
+            target.SetView(_view);
+            _game.Draw(target, states);
+            if (_fpsToggle)
             {
-                msFLabel.Draw(target, states);
+                _msFLabel.Draw(target, states);
             }
         }
     }

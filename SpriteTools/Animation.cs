@@ -1,31 +1,28 @@
-﻿using SFML.Graphics;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SFML.Graphics;
 
 namespace Ending.SpriteTools
 {
     public class Animation
     {
-        public List<IntRect> frames { get; }
+        public List<IntRect> Frames { get; }
 
-        public List<IntRect> frameBounds { get; }
+        public List<IntRect> FrameBounds { get; }
 
-        public Texture spriteSheet;
+        public Texture SpriteSheet;
 
         public Animation(Texture spriteSheet)
         {
-            frames = new List<IntRect>();
-            frameBounds = new List<IntRect>();
-            this.spriteSheet = spriteSheet;
+            Frames = new List<IntRect>();
+            FrameBounds = new List<IntRect>();
+            SpriteSheet = spriteSheet;
         }
 
         public void AddFrame(IntRect rect)
         {
-            frames.Add(rect);
-            frameBounds.Add(CalculateBounds(rect));
+            Frames.Add(rect);
+            FrameBounds.Add(CalculateBounds(rect));
         }
 
         private IntRect CalculateBounds(IntRect rect)
@@ -38,30 +35,29 @@ namespace Ending.SpriteTools
             var minY = minX;
             var maxY = maxX;
 
-            Image img = spriteSheet.CopyToImage();
+            var img = SpriteSheet.CopyToImage();
 
             for (var x = rect.Left; x < width; x++)
             {
                 for (var y = rect.Top; y < height; y++)
                 {
-                    if (img.GetPixel((uint) x, (uint) y).A != 0) 
+                    if (img.GetPixel((uint) x, (uint) y).A < 123) continue;
+
+                    if (x < minX)
                     {
-                        if (x < minX)
-                        {
-                            minX = x - rect.Left;
-                        }
-                        else if (x > maxX)
-                        {
-                            maxX = x - rect.Left;
-                        }
-                        if (y < minY)
-                        {
-                            minY = y;
-                        }
-                        else if (y > maxY)
-                        {
-                            maxY = y;
-                        }
+                        minX = x - rect.Left;
+                    }
+                    else if (x > maxX)
+                    {
+                        maxX = x - rect.Left;
+                    }
+                    if (y < minY)
+                    {
+                        minY = y;
+                    }
+                    else if (y > maxY)
+                    {
+                        maxY = y;
                     }
                 }
             }

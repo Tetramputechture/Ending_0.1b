@@ -1,186 +1,178 @@
-﻿using Ending.Audio;
-using Ending.Component;
+﻿using Ending.Component;
 using Ending.GameState;
 using Ending.SpriteTools;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ending.GameLogic
 {
-    public class EntityGraphicsComponent : GraphicsComponent
+    public class EntityGraphicsComponent : IGraphicsComponent
     {
-        private AnimatedSprite sprite;
+        private readonly AnimatedSprite _sprite;
 
-        private Animation south;
-        private Animation west;
-        private Animation north;
-        private Animation east;
-        private Animation northwest;
-        private Animation northeast;
-        private Animation southwest;
-        private Animation southeast;
+        private readonly Animation _south;
+        private readonly Animation _west;
+        private readonly Animation _north;
+        private readonly Animation _east;
+        private readonly Animation _northwest;
+        private readonly Animation _northeast;
+        private readonly Animation _southwest;
+        private readonly Animation _southeast;
 
-        private Animation currentAnimation;
+        private Animation _currentAnimation;
 
-        private const int SPRITE_WIDTH = 32;
-        private const int SPRITE_HEIGHT = 32;
+        private const int SpriteWidth = 32;
+        private const int SpriteHeight = 32;
 
-        private const int NUM_FRAMES = 5;
+        private const int NumFrames = 5;
 
-        private RectangleShape entityBoundingBoxOutline;
-        private RectangleShape geometryBoundingBoxOutline;
+        private readonly RectangleShape _entityBoundingBoxOutline;
+        private readonly RectangleShape _geometryBoundingBoxOutline;
 
-        private Music footstepMusic;
+        private readonly Music _footstepMusic;
 
         public EntityGraphicsComponent(Texture spriteSheet)
         {
-            entityBoundingBoxOutline = new RectangleShape
+            _entityBoundingBoxOutline = new RectangleShape
             {
                 FillColor = Color.Transparent,
                 OutlineColor = Color.Red,
                 OutlineThickness = 1
             };
 
-            geometryBoundingBoxOutline = new RectangleShape
+            _geometryBoundingBoxOutline = new RectangleShape
             {
                 FillColor = Color.Transparent,
                 OutlineColor = Color.White,
                 OutlineThickness = 1
             };
 
-            sprite = new AnimatedSprite(Time.FromSeconds(0.1f), true, false);
+            _sprite = new AnimatedSprite(Time.FromSeconds(0.1f), true, false);
 
-            south = new Animation(spriteSheet);
-            addFramesToAnimation(south, SPRITE_HEIGHT * 0);
+            _south = new Animation(spriteSheet);
+            AddFramesToAnimation(_south, SpriteHeight * 0);
 
-            west = new Animation(spriteSheet);
-            addFramesToAnimation(west, SPRITE_HEIGHT * 3);
+            _north = new Animation(spriteSheet);
+            AddFramesToAnimation(_north, SpriteHeight * 1);
 
-            east = new Animation(spriteSheet);
-            addFramesToAnimation(east, SPRITE_HEIGHT * 2);
+            _east = new Animation(spriteSheet);
+            AddFramesToAnimation(_east, SpriteHeight * 2);
 
-            north = new Animation(spriteSheet);
-            addFramesToAnimation(north, SPRITE_HEIGHT * 1);
+            _west = new Animation(spriteSheet);
+            AddFramesToAnimation(_west, SpriteHeight * 3);
 
-            northwest = new Animation(spriteSheet);
-            addFramesToAnimation(northwest, SPRITE_HEIGHT * 4);
+            _northwest = new Animation(spriteSheet);
+            AddFramesToAnimation(_northwest, SpriteHeight * 4);
 
-            northeast = new Animation(spriteSheet);
-            addFramesToAnimation(northeast, SPRITE_HEIGHT * 5);
+            _northeast = new Animation(spriteSheet);
+            AddFramesToAnimation(_northeast, SpriteHeight * 5);
 
-            southwest = new Animation(spriteSheet);
-            addFramesToAnimation(southwest, SPRITE_HEIGHT * 6);
+            _southwest = new Animation(spriteSheet);
+            AddFramesToAnimation(_southwest, SpriteHeight * 6);
 
-            southeast = new Animation(spriteSheet);
-            addFramesToAnimation(southeast, SPRITE_HEIGHT * 7);
+            _southeast = new Animation(spriteSheet);
+            AddFramesToAnimation(_southeast, SpriteHeight * 7);
 
-            currentAnimation = south;
+            _currentAnimation = _south;
 
-            sprite.animation = currentAnimation;
+            _sprite.Animation = _currentAnimation;
 
-            footstepMusic = new Music("sounds/footstep.wav");
-            footstepMusic.Loop = true;
+            _footstepMusic = new Music("sounds/footstep.wav") { Loop = true };
         }
 
-        private void addFramesToAnimation(Animation animation, int height)
+        private static void AddFramesToAnimation(Animation animation, int height)
         {
-            for (int i = 0; i < NUM_FRAMES; i++)
+            for (var i = 0; i < NumFrames; i++)
             {
-                animation.AddFrame(new IntRect(i * SPRITE_WIDTH, height, SPRITE_WIDTH, SPRITE_HEIGHT));
+                animation.AddFrame(new IntRect(i * SpriteWidth, height, SpriteWidth, SpriteHeight));
             }
         }
 
         public void Update(Entity entity, RenderTarget target)
         {
-            Vector2f velocity = entity.velocity;
+            var velocity = entity.Velocity;
 
             // south
             if (velocity.X == 0 && velocity.Y > 0)
             {
-                currentAnimation = south;
+                _currentAnimation = _south;
             }
             // east
             if (velocity.X > 0 && velocity.Y == 0)
             {
-                currentAnimation = east;
+                _currentAnimation = _east;
             }
             // north
             if (velocity.X == 0 && velocity.Y < 0)
             {
-                currentAnimation = north;
+                _currentAnimation = _north;
             }
             // west
             if (velocity.X < 0 && velocity.Y == 0)
             {
-                currentAnimation = west;
+                _currentAnimation = _west;
             }
-            // northwest
+            // _northwest
             if (velocity.X < 0 && velocity.Y < 0)
             {
-                currentAnimation = northwest;
+                _currentAnimation = _northwest;
             }
             // northeast
             if (velocity.X > 0 && velocity.Y < 0)
             {
-                currentAnimation = northeast;
+                _currentAnimation = _northeast;
             }
             // southwest
             if (velocity.X < 0 && velocity.Y > 0)
             {
-                currentAnimation = southwest;
+                _currentAnimation = _southwest;
             }
             // southeast
             if (velocity.X > 0 && velocity.Y > 0)
             {
-                currentAnimation = southeast;
+                _currentAnimation = _southeast;
             }
 
-            sprite.animation = currentAnimation;
-            sprite.pause = false;
+            _sprite.Animation = _currentAnimation;
+            _sprite.Pause = false;
 
             // if not moving, stop animation
             if (velocity.X == 0 && velocity.Y == 0)
             {
-                sprite.Stop();
-                footstepMusic.Stop();
+                _sprite.Stop();
+                _footstepMusic.Stop();
             }
             else
             {
-                if (footstepMusic.Status == SoundStatus.Stopped)
+                if (_footstepMusic.Status == SoundStatus.Stopped)
                 {
-                    footstepMusic.Play();
+                    _footstepMusic.Play();
                 }
             }
 
-            sprite.Update(Game.deltaTime);
+            _sprite.Update(Game.DeltaTime);
 
-            sprite.Position = entity.Position;
+            _sprite.Position = entity.Position;
 
-            FloatRect spriteBounds = sprite.globalBounds;
-            FloatRect geoBounds = new FloatRect(spriteBounds.Left + 3, spriteBounds.Top + spriteBounds.Height - 3, spriteBounds.Width - 6, 3);
+            var spriteBounds = _sprite.GlobalBounds;
+            var geoBounds = new FloatRect(spriteBounds.Left + 3, spriteBounds.Top + spriteBounds.Height - 3, spriteBounds.Width - 6, 3);
 
-            entity.entityBoundingBox = spriteBounds;
-            entity.geometryBoundingBox = geoBounds;
+            entity.EntityBoundingBox = spriteBounds;
+            entity.GeometryBoundingBox = geoBounds;
 
-            entityBoundingBoxOutline.Position = new Vector2f(spriteBounds.Left, spriteBounds.Top);
-            entityBoundingBoxOutline.Size = new Vector2f(spriteBounds.Width, spriteBounds.Height);
+            _entityBoundingBoxOutline.Position = new Vector2f(spriteBounds.Left, spriteBounds.Top);
+            _entityBoundingBoxOutline.Size = new Vector2f(spriteBounds.Width, spriteBounds.Height);
 
-            geometryBoundingBoxOutline.Position = new Vector2f(geoBounds.Left, geoBounds.Top);
-            geometryBoundingBoxOutline.Size = new Vector2f(geoBounds.Width, geoBounds.Height);
+            _geometryBoundingBoxOutline.Position = new Vector2f(geoBounds.Left, geoBounds.Top);
+            _geometryBoundingBoxOutline.Size = new Vector2f(geoBounds.Width, geoBounds.Height);
 
-            target.Draw(sprite);
+            target.Draw(_sprite);
 
-            if (State.showEntityBoundingBoxes)
-            {
-                target.Draw(entityBoundingBoxOutline);
-                target.Draw(geometryBoundingBoxOutline);
-            }
+            if (!State.ShowEntityBoundingBoxes) return;
+
+            target.Draw(_entityBoundingBoxOutline);
+            target.Draw(_geometryBoundingBoxOutline);
         }
     }
 }

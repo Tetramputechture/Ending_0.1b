@@ -1,47 +1,39 @@
-﻿using SFML.System;
-using SFML.Window;
-using SFML.Graphics;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Ending.GameState;
+using SFML.Graphics;
+using SFML.System;
+using SFML.Window;
 
 namespace Ending.Input
 {
     public class InputHandler
     {
-        private static List<Keyboard.Key> keysPressed = new List<Keyboard.Key>();
+        private static readonly List<Keyboard.Key> KeysPressed = new List<Keyboard.Key>();
 
-        private static List<Mouse.Button> mouseButtonsPressed = new List<Mouse.Button>();
+        private static readonly List<Mouse.Button> MouseButtonsPressed = new List<Mouse.Button>();
 
-        public static Vector2i mousePosition { get; private set; }
+        public static Vector2i MousePosition;
 
-        private static bool eventsInitialized = false;
+        private static bool _eventsInitialized;
 
-        private static void InitEvents(RenderWindow rw)
+        private static void InitEvents(Window rw)
         {
-            rw.Closed += (s, e) =>
-            {
-                ((RenderWindow)s).Close();
-            };
+            rw.Closed += (s, e) => ((RenderWindow)s).Close();
 
-            rw.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyPressed);
+            rw.KeyPressed += OnKeyPressed;
 
-            rw.KeyReleased += new EventHandler<KeyEventArgs>(OnKeyReleased);
+            rw.KeyReleased += OnKeyReleased;
 
-            rw.MouseMoved += new EventHandler<MouseMoveEventArgs>(OnMouseMoved);
+            rw.MouseMoved += OnMouseMoved;
 
-            rw.MouseButtonPressed += new EventHandler<MouseButtonEventArgs>(OnMouseButtonPressed);
+            rw.MouseButtonPressed += OnMouseButtonPressed;
 
-            eventsInitialized = true;
+            _eventsInitialized = true;
         }
 
         public static void HandleEvents(RenderWindow rw)
         {
-            if (!eventsInitialized)
+            if (!_eventsInitialized)
             {
                 InitEvents(rw);
             }
@@ -49,34 +41,22 @@ namespace Ending.Input
             rw.DispatchEvents();
         }
 
-        private static void OnKeyPressed(object sender, KeyEventArgs e)     
+        private static void OnKeyPressed(object sender, KeyEventArgs e)
         {
-            if (!keysPressed.Contains(e.Code))
+            if (!KeysPressed.Contains(e.Code))
             {
-                keysPressed.Add(e.Code);
+                KeysPressed.Add(e.Code);
             }
 
-            State.currentScreen.KeyPressed(sender, e);
+            State.CurrentScreen.KeyPressed(sender, e);
         }
 
-        private static void OnKeyReleased(object sender, KeyEventArgs e)
-        {
-            keysPressed.Remove(e.Code);
-        }
+        private static void OnKeyReleased(object sender, KeyEventArgs e) => KeysPressed.Remove(e.Code);
 
-        public static bool IsKeyPressed(Keyboard.Key key)
-        {
-            return keysPressed.Contains(key);
-        }
+        public static bool IsKeyPressed(Keyboard.Key key) => KeysPressed.Contains(key);
 
-        private static void OnMouseMoved(object sender, MouseMoveEventArgs e)
-        {
-            State.currentScreen.MouseMoved(sender, e);
-        }
+        private static void OnMouseMoved(object sender, MouseMoveEventArgs e) => State.CurrentScreen.MouseMoved(sender, e);
 
-        private static void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
-        {
-            State.currentScreen.MouseButtonPressed(sender, e);
-        }
+        private static void OnMouseButtonPressed(object sender, MouseButtonEventArgs e) => State.CurrentScreen.MouseButtonPressed(sender, e);
     }
 }

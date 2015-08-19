@@ -1,36 +1,30 @@
 ﻿using Ending.Component;
 using Ending.Input;
-using SFML.System;
-using SFML.Window;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static SFML.Window.Keyboard.Key;
 
 namespace Ending.GameLogic.Player
 {
-    public class PlayerInputComponent : InputComponent
+    public class PlayerInputComponent : IInputComponent
     {
-        private const int SPEED = 90;
+        private const int Speed = 90;
 
         public void Update(Entity entity)
         {
-            if (InputHandler.IsKeyPressed(Keyboard.Key.S))
+            if (InputHandler.IsKeyPressed(S))
             {
-                entity.velocity.Y += SPEED;
+                entity.Velocity.Y += Speed;
             }
-            if (InputHandler.IsKeyPressed(Keyboard.Key.A))
+            if (InputHandler.IsKeyPressed(A))
             {
-                entity.velocity.X -= SPEED;
+                entity.Velocity.X -= Speed;
             }
-            if (InputHandler.IsKeyPressed(Keyboard.Key.D))
+            if (InputHandler.IsKeyPressed(D))
             {
-                entity.velocity.X += SPEED;
+                entity.Velocity.X += Speed;
             }
-            if (InputHandler.IsKeyPressed(Keyboard.Key.W))
+            if (InputHandler.IsKeyPressed(W))
             {
-                entity.velocity.Y -= SPEED;
+                entity.Velocity.Y -= Speed;
             }
         }
     }

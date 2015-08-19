@@ -2,68 +2,67 @@
 using Ending.Lighting;
 using SFML.Graphics;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ending.GameLogic
 {
     public class Game
     {
-        public Dungeon dungeon { get; private set; }
+        public View View { get; }
 
-        private DungeonGenerator generator;
+        private readonly Entity _player;
 
-        public View view { get; }
+        private static Clock _frameClock;
 
-        private Entity player;
+        public static Time DeltaTime { get; private set; }
 
-        private DynamicLight playerLight;
+        public Map Map { get; }
 
-        private static Clock frameClock;
-
-        public static Time deltaTime { get; private set; }
+        private readonly DynamicLight _playerLight;
 
         public Game()
         {
-            generator = new DungeonGenerator();
-            dungeon = generator.Generate(new StoneDungeonStyle(), 40, 30);
-            view = new View();
-            view.Size = new Vector2f(320, 240);
-            player = Entity.CreatePlayer();
-            initPlayer();
-            frameClock = new Clock();
-        }
+            View = new View
+            {
+                Size = new Vector2f(320, 240),
+                Center = new Vector2f(320, 240)
+            };
+            _player = Entity.CreatePlayer();
+            _frameClock = new Clock();
 
-        private void initPlayer()
-        {
-            dungeon.AddEntity(20, 15, player);
-            dungeon.lightMap.ambient = new Vector3f(0.25f, 0.25f, 0.25f);
-            playerLight = dungeon.lightMap.RequestLight();
-            playerLight.radius = 128;
-            playerLight.color = new Vector3f(0.75f, 0.75f, 0.75f);
-            playerLight.position = new Vector3f(player.Position.X, player.Position.Y, 0);
-        }
+            Map = new Map(40, 30);
 
-        public void GenerateNewDungeon()
-        {
-            dungeon = generator.Generate(new StoneDungeonStyle(), 40, 30);
-            initPlayer();
+            for (var x = 0; x < Map.Size.X; x++)
+            {
+                for (var y = 0; y < Map.Size.Y; y++)
+                {
+                    Map.AddTile(new Tile(TileType.Stonefloor), x, y, 0);
+                }
+            }
+
+            Map.LightMap.Ambient = new Vector3f(0.1f, 0.1f, 0.1f);
+            Map.AddEntity(_player, 20, 15);
+
+            _playerLight = Map.LightMap.RequestLight();
+            _playerLight.Position = _player.Position;
+            _playerLight.Color = new Vector3f(0.85f, 0.85f, 0.85f);
+            _playerLight.Radius = 128;
+
+            Map.AddTile(new Tile(TileType.StonewallNorth), 22, 17, 1);
+            Map.AddTile(new Tile(TileType.StonewallNorth), 22, 14, 1);
+            Map.AddTile(new Tile(TileType.StonewallNorth), 18, 17, 1);
+            Map.AddTile(new Tile(TileType.StonewallNorth), 18, 14, 1);
         }
 
         public void Update()
         {
-            view.Center = player.Position;
-            dungeon.center = view.Center;
-            playerLight.position = new Vector3f(player.Position.X, player.Position.Y, 0);
-            deltaTime = frameClock.Restart();
+            Map.Center = _player.Position;
+            _playerLight.Position = new Vector2f(_player.GeometryBoundingBox.Left + _player.GeometryBoundingBox.Width / 2f, _player.GeometryBoundingBox.Top + _player.GeometryBoundingBox.Height / 2f);
+            DeltaTime = _frameClock.Restart();
         }
 
         public void Draw(RenderTarget target, RenderStates states)
         {
-            dungeon.Draw(target, states);
+            Map.Draw(target, states);
         }
     }
 }

@@ -1,26 +1,20 @@
-﻿using SFML.Graphics;
-using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SFML.System;
 
 namespace Ending.Lighting
 {
     public class DynamicLight
     {
-        public Vector3f position;
+        public Vector2f Position;
 
-        public Vector3f color;
+        public Vector3f Color;
 
-        public float radius;
+        public float Radius;
 
         public DynamicLight()
         {
-            position = new Vector3f();
-            color = new Vector3f();
-            radius = 0;
+            Position = new Vector2f();
+            Color = new Vector3f();
+            Radius = 0;
         }
     }
 }

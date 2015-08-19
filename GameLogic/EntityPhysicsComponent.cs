@@ -1,80 +1,63 @@
-﻿using Ending.Component;
-using Ending.GameLogic.DungeonTools;
+﻿using System;
+using Ending.Component;
 using SFML.Graphics;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ending.GameLogic
 {
-    public class EntityPhysicsComponent : PhysicsComponent
+    public class EntityPhysicsComponent : IPhysicsComponent
     {
-        private const float SQRT2 = 1.4142135624f;
+        private const float Sqrt2 = 1.4142135624f;
 
-        public void Update(Entity entity, Dungeon dungeon)
+        private FloatRect _tileBounds = new FloatRect(0, 0, 32, 32);
+
+        public void Update(Entity entity, Map map)
         {
-            Vector2f pos = entity.Position;
+            var pos = entity.Position;
 
-            FloatRect bounds = entity.geometryBoundingBox;
+            var bounds = entity.GeometryBoundingBox;
 
             // if entity is moving diagonally, divide vector by sqrt 2
-            if (entity.velocity.X != 0 && entity.velocity.Y != 0)
+            if (entity.Velocity.X != 0 && entity.Velocity.Y != 0)
             {
-                entity.velocity /= SQRT2;
+                entity.Velocity /= Sqrt2;
             }
 
-            entity.Position += entity.velocity * Game.deltaTime.AsSeconds();
+            entity.Position += entity.Velocity * Game.DeltaTime.AsSeconds();
 
             // see if entity is colliding with an unpassable tile
-            for (var x = 0; x < dungeon.size.X; x++)
+            for (var x = 0; x < map.Size.X; x++)
             {
-                for (var y = 0; y < dungeon.size.Y; y++)
+                for (var y = 0; y < map.Size.Y; y++)
                 {
-                    Tile t = dungeon.tileData[x, y];
-                    if (!t.type.passable)
-                    {
-                        FloatRect area;
-                        if (bounds.Intersects(t.globalBounds, out area))
-                        {
-                            // vertical collision
-                            if (area.Width > area.Height && area.Height != bounds.Height)
-                            {
-                                // top
-                                if (area.Contains(area.Left, bounds.Top))
-                                {
-                                    entity.Position = new Vector2f(pos.X, pos.Y + area.Height);
-                                }
-                                // down
-                                else
-                                {
-                                    entity.Position = new Vector2f(pos.X, pos.Y - area.Height);
-                                }
-                            }
+                    var t = map.Layer1Cells[x, y];
 
-                            // horizontal collision
-                            else if (area.Width < area.Height || area.Height == bounds.Height)
-                            {
-                                // right
-                                if (area.Contains(bounds.Left + bounds.Width - 0.0001f, area.Top + 1))
-                                {
-                                    entity.Position = new Vector2f(pos.X - area.Width, pos.Y);
-                                }
-                                // left
-                                else
-                                {
-                                    entity.Position = new Vector2f(pos.X + area.Width, pos.Y);
-                                }
-                            }
-                        }
+                    if (t.IsEmpty()) continue;
+
+                    _tileBounds.Left = x * map.CellSize;
+                    _tileBounds.Top = y * map.CellSize;
+
+                    FloatRect area;
+                    if (!bounds.Intersects(_tileBounds, out area)) continue;
+
+                    // vertical collision
+                    if (area.Width > area.Height && Math.Abs(area.Height - bounds.Height) > 0.001f)
+                    {
+                        // top
+                        entity.Position = area.Contains(area.Left, bounds.Top) ? new Vector2f(pos.X, pos.Y + area.Height) : new Vector2f(pos.X, pos.Y - area.Height);
+                    }
+
+                    // horizontal collision
+                    else if (area.Width < area.Height || Math.Abs(area.Height - bounds.Height) < 0.001f)
+                    {
+                        // right
+                        entity.Position = area.Contains(bounds.Left + bounds.Width - 0.0001f, area.Top + 1) ? new Vector2f(pos.X - area.Width, pos.Y) : new Vector2f(pos.X + area.Width, pos.Y);
                     }
                 }
             }
 
             // set velocity back to 0 for next frame
-            entity.velocity = new Vector2f(0, 0);
+            entity.Velocity = new Vector2f(0, 0);
         }
 
     }
