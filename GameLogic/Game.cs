@@ -35,22 +35,26 @@ namespace Ending.GameLogic
             {
                 for (var y = 0; y < Map.Size.Y; y++)
                 {
-                    Map.AddTile(new Tile(TileType.Stonefloor), x, y, 0);
+                    Map.AddTile(TileType.Stonefloor, x, y, 0);
                 }
             }
 
-            Map.LightMap.Ambient = new Vector3f(0.1f, 0.1f, 0.1f);
-            Map.AddEntity(_player, 20, 15);
+            Map.AmbientLightColor = new Vector3f(0.1f, 0.1f, 0.1f);
+            _player.Position = new Vector2f(20 * 32, 15 * 32);
+            Map.AddEntity(_player);
 
-            _playerLight = Map.LightMap.RequestLight();
-            _playerLight.Position = _player.Position;
-            _playerLight.Color = new Vector3f(0.85f, 0.85f, 0.85f);
-            _playerLight.Radius = 128;
+            _playerLight = new DynamicLight
+            {
+                Position = _player.Position,
+                Color = new Vector3f(0.85f, 0.85f, 0.85f),
+                Radius = 128
+            };
+            Map.AddLight(_playerLight);
 
-            Map.AddTile(new Tile(TileType.StonewallNorth), 22, 17, 1);
-            Map.AddTile(new Tile(TileType.StonewallNorth), 22, 14, 1);
-            Map.AddTile(new Tile(TileType.StonewallNorth), 18, 17, 1);
-            Map.AddTile(new Tile(TileType.StonewallNorth), 18, 14, 1);
+            Map.AddTile(TileType.StonewallNorth, 22, 17, 1);
+            Map.AddTile(TileType.StonewallNorth, 22, 14, 1); 
+            Map.AddTile(TileType.StonewallNorth, 18, 17, 1);
+            Map.AddTile(TileType.StonewallNorth, 18, 14, 1);
         }
 
         public void Update()
@@ -58,11 +62,6 @@ namespace Ending.GameLogic
             Map.Center = _player.Position;
             _playerLight.Position = new Vector2f(_player.GeometryBoundingBox.Left + _player.GeometryBoundingBox.Width / 2f, _player.GeometryBoundingBox.Top + _player.GeometryBoundingBox.Height / 2f);
             DeltaTime = _frameClock.Restart();
-        }
-
-        public void Draw(RenderTarget target, RenderStates states)
-        {
-            Map.Draw(target, states);
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Ending.GameWindow
         public Window(string title)
         {
             _rw = new RenderWindow(new VideoMode(WindowConfig.WindowWidth, WindowConfig.WindowHeight), title);
+            State.Open = true;
             State.CurrentScreen = new MainMenuScreen();
         }
 
@@ -19,7 +20,7 @@ namespace Ending.GameWindow
 
         public void Display()
         {
-            while (_rw.IsOpen)
+            while (State.Open && _rw.IsOpen)
             {
                 InputHandler.HandleEvents(_rw);
 

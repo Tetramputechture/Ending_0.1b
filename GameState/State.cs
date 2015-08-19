@@ -5,5 +5,7 @@
         public static Screen CurrentScreen;
 
         public static bool ShowEntityBoundingBoxes;
+
+        public static bool Open;
     }
 }

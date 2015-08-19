@@ -83,11 +83,9 @@ namespace Ending.GameState
             target.Clear(Color.Black);
 
             target.SetView(_view);
-            _game.Draw(target, states);
+            _game.Map.Draw(target, states);
             if (_fpsToggle)
-            {
                 _msFLabel.Draw(target, states);
-            }
         }
     }
 }

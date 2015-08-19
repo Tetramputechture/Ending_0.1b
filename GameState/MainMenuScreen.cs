@@ -68,7 +68,7 @@ namespace Ending.GameState
                 HoverSoundFilename = "sounds/buttonhover.wav",
                 DefaultTextColor = new Color(73, 73, 73),
                 TextHighlightColor = new Color(242, 242, 242),
-                ClickAction = () => { State.CurrentScreen = new GameScreen(); }
+                ClickAction = () => { State.Open = false; }
             };
 
 
