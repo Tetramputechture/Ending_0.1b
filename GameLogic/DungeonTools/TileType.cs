@@ -8,7 +8,7 @@ namespace Ending.GameLogic.DungeonTools
 
         public static readonly TileType Stoneroof = new TileType("sprites/tiles/stonewall.png", false);
 
-        public static readonly TileType StonewallNorth = new TileType("sprites/tiles/stonewallnorth.png");
+        public static readonly TileType StonewallNorth = new TileType("sprites/tiles/stonewall.png");
 
         public static readonly TileType StonewallEast = new TileType("sprites/tiles/stonewalleast.png");
 
@@ -16,15 +16,17 @@ namespace Ending.GameLogic.DungeonTools
 
         public static readonly TileType StonewallSouth = new TileType("sprites/tiles/stonewallsouth.png");
 
-        public static readonly TileType Null = new TileType(null, false);
-
         public Texture Texture { get; }
+
+        public readonly string TextureName;
 
         public bool LightingEnabled { get; }
 
         TileType(string textureName, bool lightingEnabled = true)
         {
             if (textureName != null) Texture = new Texture(textureName);
+
+            TextureName = textureName;
 
             LightingEnabled = lightingEnabled;
         }

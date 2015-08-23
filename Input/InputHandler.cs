@@ -55,7 +55,11 @@ namespace Ending.Input
 
         public static bool IsKeyPressed(Keyboard.Key key) => KeysPressed.Contains(key);
 
-        private static void OnMouseMoved(object sender, MouseMoveEventArgs e) => State.CurrentScreen.MouseMoved(sender, e);
+        private static void OnMouseMoved(object sender, MouseMoveEventArgs e)
+        {
+            State.CurrentScreen.MouseMoved(sender, e);
+            MousePosition = new Vector2i(e.X, e.Y);
+        } 
 
         private static void OnMouseButtonPressed(object sender, MouseButtonEventArgs e) => State.CurrentScreen.MouseButtonPressed(sender, e);
     }

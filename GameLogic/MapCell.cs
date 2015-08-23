@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using Ending.GameLogic.DungeonTools;
 using Ending.SpriteTools;
 using SFML.Graphics;
@@ -15,7 +15,7 @@ namespace Ending.GameLogic
 
         public void AddTile(TileType type)
         {
-            if (_tiles.Count > 0 && _tiles.Peek().Type == type) return;
+            if (_tiles.Count > 0 && _tiles.Peek().TextureName == type.TextureName) return;
 
             _tiles.Push(new TileSprite(type));
         }
@@ -42,7 +42,23 @@ namespace Ending.GameLogic
 
         public void Write(BinaryWriter bw)
         {
-            
+            bw.Write(_tiles.Count);
+            foreach (var t in _tiles)
+            {
+                bw.Write(t.TextureName);
+                bw.Write(t.LightingEnabled);
+            }
+        }
+
+        public static MapCell Read(BinaryReader br)
+        {
+            var cell = new MapCell();
+
+            var tileCount = br.ReadInt32();
+            for (var i = 0; i < tileCount; i++)
+                cell._tiles.Push(new TileSprite(br.ReadString(), br.ReadBoolean()));
+
+            return cell;
         }
     }
 }

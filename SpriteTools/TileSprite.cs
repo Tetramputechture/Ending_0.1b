@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ending.GameLogic.DungeonTools;
+﻿using Ending.GameLogic.DungeonTools;
 using SFML.Graphics;
 
 namespace Ending.SpriteTools
@@ -12,13 +7,27 @@ namespace Ending.SpriteTools
     {
         public bool LightingEnabled;
 
-        public TileType Type { get; }
+        public readonly string TextureName;
 
         public TileSprite(TileType type)
         {
             Texture = type.Texture;
-            Type = type;
+            TextureName = type.TextureName;
             LightingEnabled = type.LightingEnabled;
+        }
+
+        public TileSprite(TileType type, bool lightingEnabled)
+        {
+            Texture = type.Texture;
+            TextureName = type.TextureName;
+            LightingEnabled = lightingEnabled;
+        }
+
+        public TileSprite(string textureName, bool lightingEnabled)
+        {
+            Texture = new Texture(textureName);
+            TextureName = textureName;
+            LightingEnabled = lightingEnabled;
         }
     }
 }

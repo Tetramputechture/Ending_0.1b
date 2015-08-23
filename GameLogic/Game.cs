@@ -26,22 +26,22 @@ namespace Ending.GameLogic
                 Size = new Vector2f(320, 240),
                 Center = new Vector2f(320, 240)
             };
-            _player = Entity.CreatePlayer();
+            _player = new Entity(EntityType.Player);
             _frameClock = new Clock();
 
-            Map = new Map(40, 30);
+            var tempMap = new Map("testmap", 40, 30);
 
-            for (var x = 0; x < Map.Size.X; x++)
+            for (var x = 0; x < tempMap.Size.X; x++)
             {
-                for (var y = 0; y < Map.Size.Y; y++)
+                for (var y = 0; y < tempMap.Size.Y; y++)
                 {
-                    Map.AddTile(TileType.Stonefloor, x, y, 0);
+                    tempMap.AddTile(TileType.Stonefloor, x, y, 0);
                 }
             }
 
-            Map.AmbientLightColor = new Vector3f(0.1f, 0.1f, 0.1f);
+            tempMap.AmbientLightColor = new Vector3f(0.5f, 0.5f, 0.5f);
             _player.Position = new Vector2f(20 * 32, 15 * 32);
-            Map.AddEntity(_player);
+            tempMap.AddEntity(_player);
 
             _playerLight = new DynamicLight
             {
@@ -49,12 +49,22 @@ namespace Ending.GameLogic
                 Color = new Vector3f(0.85f, 0.85f, 0.85f),
                 Radius = 128
             };
-            Map.AddLight(_playerLight);
+            //tempMap.AddLight(_playerLight);
 
-            Map.AddTile(TileType.StonewallNorth, 22, 17, 1);
-            Map.AddTile(TileType.StonewallNorth, 22, 14, 1); 
-            Map.AddTile(TileType.StonewallNorth, 18, 17, 1);
-            Map.AddTile(TileType.StonewallNorth, 18, 14, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 22, 18, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 22, 14, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 18, 18, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 18, 14, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 20, 12, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 16, 16, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 20, 20, 1);
+            tempMap.AddTile(TileType.StonewallNorth, 24, 16, 1);
+
+            tempMap.Save("test.map");
+
+            Map = Map.Load("test.map");
+            Map._entities[0] = _player;
+            //Map._lights[0] = _playerLight;
         }
 
         public void Update()

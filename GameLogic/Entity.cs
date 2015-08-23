@@ -1,5 +1,5 @@
-﻿using Ending.Component;
-using Ending.GameLogic.Player;
+﻿using System;
+using System.IO;
 using SFML.Graphics;
 using SFML.System;
 
@@ -7,34 +7,52 @@ namespace Ending.GameLogic
 {
     public class Entity : Transformable
     {
-        private readonly IInputComponent _input;
-        private readonly IGraphicsComponent _graphics;
-        private readonly IPhysicsComponent _physics;
+        public readonly EntityType Type;
 
         public Vector2f Velocity;
 
         public FloatRect EntityBoundingBox;
         public FloatRect GeometryBoundingBox;
 
-        public Entity(IInputComponent input,
-            IGraphicsComponent graphics,
-            IPhysicsComponent physics)
+        public Entity(EntityType type)
         {
-            _input = input;
-            _graphics = graphics;
-            _physics = physics;
+            Type = type;
         }
 
         public void Update(RenderTarget target, Map map)
         {
-            _input.Update(this);
-            _graphics.Update(this, target);
-            _physics.Update(this, map);
+            Type.Input.Update(this);
+            Type.Graphics.Update(this, target);
+            Type.Physics.Update(this, map);
         }
 
-        public static Entity CreatePlayer() => new Entity(
-            new PlayerInputComponent(),
-            new EntityGraphicsComponent(new Texture("sprites/player_shadowed.png")),
-            new EntityPhysicsComponent());
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Type.Id);
+
+            bw.Write(Position.X);
+            bw.Write(Position.Y);
+        }
+
+        public static Entity Read(BinaryReader br)
+        {
+            var id = br.ReadInt16();
+
+            EntityType type;
+
+            switch (id)
+            {
+                case 1:
+                    type = EntityType.Player;
+                    break;
+                default:
+                    type = EntityType.Player;
+                    break;
+            }
+
+            var pos = new Vector2f(br.ReadSingle(), br.ReadSingle());
+
+            return new Entity(type) { Position = pos };
+        }
     }
 }
