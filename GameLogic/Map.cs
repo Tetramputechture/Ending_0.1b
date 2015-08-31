@@ -6,6 +6,7 @@ using System.Text;
 using Ending.GameLogic.DungeonTools;
 using Ending.Input;
 using Ending.Lighting;
+using Ending.SpriteTools;
 using SFML.Graphics;
 using SFML.System;
 
@@ -21,7 +22,7 @@ namespace Ending.GameLogic
 
         public readonly List<Entity> _entities;
 
-        public readonly List<DynamicLight> _lights;
+        public readonly List<PointLight> _lights;
 
         private readonly Vector3f[,] _finalLightColors;
 
@@ -63,7 +64,7 @@ namespace Ending.GameLogic
 
             _entities = new List<Entity>();
 
-            _lights = new List<DynamicLight>();
+            _lights = new List<PointLight>();
 
             _finalLightColors = new Vector3f[size.X, size.Y];
 
@@ -91,6 +92,10 @@ namespace Ending.GameLogic
                 case 1:
                     Layer1Cells[x, y].AddTile(type);
                     Layer1Cells[x, y].SetPosition(x * CellSize, y * CellSize);
+                    foreach (var l in _lights)
+                    {
+                        l.VisMap.AddRectangleOccluder(new FloatRect(x * 32, y * 32, 32, 32));
+                    }
                     _segmentsNeedUpdate = true;
                     break;
                 default:
@@ -102,7 +107,7 @@ namespace Ending.GameLogic
 
         public void AddEntity(Entity e) => _entities.Add(e);
 
-        public void AddLight(DynamicLight l) => _lights.Add(l);
+        public void AddLight(PointLight l) => _lights.Add(l);
 
         public void Draw(RenderTarget target, RenderStates states)
         {
@@ -138,8 +143,6 @@ namespace Ending.GameLogic
                 _segmentsNeedUpdate = false;
             }
 
-            UpdateLightmapRegion(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
-
             for (var x = topLeft.X; x < bottomRight.X; x++)
             {
                 for (var y = topLeft.Y; y < bottomRight.Y; y++)
@@ -165,6 +168,8 @@ namespace Ending.GameLogic
             {
                 for (var y = topLeft.Y; y < bottomRight.Y; y++)
                 {
+                    if (Layer2Cells[x, y].IsEmpty()) continue;
+
                     var color = GetLightColor(x, y);
 
                     Layer2Cells[x, y].LightPass(color);
@@ -172,72 +177,78 @@ namespace Ending.GameLogic
                 }
             }
 
-            // get all unique endpoints
-            var points = new HashSet<Vector2f>();
-            foreach (var v in _segments)
-            {
-                points.Add(v.Item1);
-                points.Add(v.Item2);
-            }
+            //// get all unique endpoints
+            //var points = new HashSet<Vector2f>();
+            //foreach (var v in _segments)
+            //{
+            //    points.Add(v.Item1);
+            //    points.Add(v.Item2);
+            //}
 
-            // get all angles
-            var angles = new List<float>();
-            foreach (
-                var fAngle in
-                    points.Select(p => Math.Atan2(p.Y - Center.Y, p.X - Center.X)).Select(angle => (float) angle))
-            {
-                angles.Add(fAngle - 0.0001f);
-                angles.Add(fAngle);
-                angles.Add(fAngle + 0.0001f);
-            }
+            //// get all angles
+            //var angles = new List<float>();
+            //foreach (
+            //    var fAngle in
+            //        points.Select(p => Math.Atan2(p.Y - Center.Y, p.X - Center.X)).Select(angle => (float)angle))
+            //{
+            //    angles.Add(fAngle - 0.0001f);
+            //    angles.Add(fAngle);
+            //    angles.Add(fAngle + 0.0001f);
+            //}
 
-            // rays in all directions
-            var intersections = new List<Ray>();
-            foreach (var angle in angles)
-            {
-                var dx = Math.Cos(angle);
-                var dy = Math.Sin(angle);
+            //// rays in all directions
+            //var intersections = new List<Ray>();
+            //foreach (var angle in angles)
+            //{
+            //    var dx = Math.Cos(angle);
+            //    var dy = Math.Sin(angle);
 
-                var rayStart = Center;
-                var rayEnd = new Vector2f(Center.X + (float) dx, Center.Y + (float) dy);
+            //    var rayStart = Center;
+            //    var rayEnd = new Vector2f(Center.X + (float)dx, Center.Y + (float)dy);
 
-                // find closest intersection
-                Ray closestIntersect = null;
+            //    // find closest intersection
+            //    Ray closestIntersect = null;
 
-                foreach (var s in _segments)
-                {
-                    var intersect = GetIntersection(rayStart, rayEnd, s.Item1 , s.Item2);
-                    if (intersect == null) continue;
+            //    foreach (var s in _segments)
+            //    {
+            //        var intersect = GetIntersection(rayStart, rayEnd, s.Item1, s.Item2);
+            //        if (intersect == null) continue;
 
-                    if (closestIntersect == null || intersect.Length < closestIntersect.Length)
-                        closestIntersect = intersect;
-                }
+            //        if (closestIntersect == null || intersect.Length < closestIntersect.Length)
+            //            closestIntersect = intersect;
+            //    }
 
-                if (closestIntersect == null) continue;
+            //    if (closestIntersect == null) continue;
 
-                closestIntersect.Angle = angle;
+            //    closestIntersect.Angle = angle;
 
-                intersections.Add(closestIntersect);
-            }
+            //    intersections.Add(closestIntersect);
+            //}
 
-            // sort intersects by angle
-            intersections.Sort((a, b) => a.Angle.CompareTo(b.Angle));
+            //// sort intersects by angle
+            //intersections.Sort((a, b) => a.Angle.CompareTo(b.Angle));
 
-            // make visibility mesh
-            var mesh = new VertexArray(PrimitiveType.TrianglesFan);
+            //// make visibility mesh
+            //var mesh = new VertexArray(PrimitiveType.TrianglesFan);
 
-            var lightColor = new Color(217, 217, 217, 50);
+            //var lightColor = new Color(217, 217, 217, 50);
 
-            mesh.Append(new Vertex(Center, lightColor));
+            //var radius = 128;
 
-            foreach (var hit in intersections)
-            {
-                mesh.Append(new Vertex(hit.Position, lightColor));
-            }
+            //mesh.Append(new Vertex(Center, lightColor));
 
-            mesh.Append(new Vertex(intersections[0].Position, lightColor));
-           
-            target.Draw(mesh);
+            //foreach (var hit in intersections)
+            //{
+            //    mesh.Append(new Vertex(hit.Position, lightColor));
+            //    //TraceLine(target, Center.X, Center.Y, hit.Position.X, hit.Position.Y);
+            //}
+
+            //mesh.Append(new Vertex(intersections[0].Position, lightColor));
+
+            //target.Draw(mesh);
+
+            foreach (var light in _lights)
+                target.Draw(light);
         }
 
         // find intersection of ray and segment
@@ -284,44 +295,6 @@ namespace Ending.GameLogic
             };
         }
 
-
-        private void UpdateLightmapRegion(int x0, int y0, int x1, int y1)
-        {
-            for (var x = x0; x < x1; x++)
-            {
-                for (var y = y0; y < y1; y++)
-                {
-                    // calculate coord of center of point
-                    var cx = x * CellSize + CellSize / 2f;
-                    var cy = y * CellSize + CellSize / 2f;
-
-                    var light = new Vector3f();
-
-                    // iterate dynamic lights
-                    foreach (var l in _lights)
-                    {
-                        var dx = cx - l.Position.X;
-                        var dy = cy - l.Position.Y;
-
-                        if (Math.Abs(dx) > l.Radius || Math.Abs(dy) > l.Radius ||
-                            (!CheckLine((int) l.Position.X, (int) l.Position.Y, (int) cx, (int) cy) &&
-                             Layer1Cells[x, y].IsEmpty())) continue;
-
-                        // light is in range of point, and not blocked
-                        var distance = (float) Math.Sqrt(dx * dx + dy * dy);
-                        var intensity = (l.Radius - distance) / l.Radius;
-                        intensity = Math.Max(0, Math.Min(1f, intensity)); // clamp
-
-                        light.X += l.Color.X * intensity;
-                        light.Y += l.Color.Y * intensity;
-                        light.Z += l.Color.Z * intensity;
-                    }
-
-                    _finalLightColors[x, y] = AmbientLightColor + light;
-                }
-            }
-        }
-
         public void TraceLine(RenderTarget rt, float x0, float y0, float x1, float y1)
         {
             var line = new[]
@@ -342,46 +315,6 @@ namespace Ending.GameLogic
             rt.Draw(endPoint);
         }
 
-        private bool CheckLine(int x0, int y0, int x1, int y1)
-        {
-            var dx = Math.Abs(x1 - x0);
-            var dy = Math.Abs(y1 - y0);
-
-            var x = x0;
-            var y = y0;
-
-            var n = 1 + dx + dy;
-
-            var xInc = (x1 > x0) ? 1 : -1;
-            var yInc = (y1 > y0) ? 1 : -1;
-
-            var error = dx - dy;
-
-            dx *= 2;
-            dy *= 2;
-
-            for (; n > 0; n--)
-            {
-                var cellX = x / CellSize;
-                var cellY = y / CellSize;
-                if (!Layer1Cells[cellX, cellY].IsEmpty())
-                    return false;
-
-                if (error > 0)
-                {
-                    x += xInc;
-                    error -= dy;
-                }
-                else
-                {
-                    y += yInc;
-                    error += dx;
-                }
-            }
-
-            return true;
-        }
-
         private Color GetLightColor(int x, int y)
         {
             var color = _finalLightColors[x, y];
@@ -390,7 +323,7 @@ namespace Ending.GameLogic
             color.Y = Math.Max(0, Math.Min(1f, color.Y));
             color.Z = Math.Max(0, Math.Min(1f, color.Z));
 
-            return new Color((byte) (color.X * 255f), (byte) (color.Y * 255f), (byte) (color.Z * 255f));
+            return new Color((byte) (AmbientLightColor.X * 255f), (byte) (AmbientLightColor.X * 255f), (byte) (AmbientLightColor.X * 255f));
         }
 
         public void Save(string filename)
@@ -472,7 +405,7 @@ namespace Ending.GameLogic
             map.AmbientLightColor = new Vector3f(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
 
             for (var i = 0; i < lightCount; i++)
-                map.AddLight(DynamicLight.Read(br));
+                map.AddLight(PointLight.Read(br));
 
             br.Close();
 

@@ -11,39 +11,39 @@ namespace Ending.GameLogic
 {
     public class MapCell : Drawable
     {
-        private readonly Stack<TileSprite> _tiles = new Stack<TileSprite>();
+        public readonly Stack<TileSprite> Tiles = new Stack<TileSprite>();
 
         public void AddTile(TileType type)
         {
-            if (_tiles.Count > 0 && _tiles.Peek().TextureName == type.TextureName) return;
+            if (Tiles.Count > 0 && Tiles.Peek().TextureName == type.TextureName) return;
 
-            _tiles.Push(new TileSprite(type));
+            Tiles.Push(new TileSprite(type));
         }
 
-        public bool IsEmpty() => _tiles.Count == 0;
+        public bool IsEmpty() => Tiles.Count == 0;
 
         public void SetPosition(int x, int y)
         {
-            foreach (var t in _tiles)
+            foreach (var t in Tiles)
                 t.Position = new Vector2f(x, y);
         }
 
         public void LightPass(Color color)
         {
-            foreach (var t in _tiles.Where(t => t.LightingEnabled))
+            foreach (var t in Tiles.Where(t => t.LightingEnabled))
                 t.Color = color;
         }
 
         public void Draw(RenderTarget target, RenderStates states)
         {
-            foreach (var tile in _tiles)
+            foreach (var tile in Tiles)
                 tile.Draw(target, states);
         }
 
         public void Write(BinaryWriter bw)
         {
-            bw.Write(_tiles.Count);
-            foreach (var t in _tiles)
+            bw.Write(Tiles.Count);
+            foreach (var t in Tiles)
             {
                 bw.Write(t.TextureName);
                 bw.Write(t.LightingEnabled);
@@ -56,7 +56,7 @@ namespace Ending.GameLogic
 
             var tileCount = br.ReadInt32();
             for (var i = 0; i < tileCount; i++)
-                cell._tiles.Push(new TileSprite(br.ReadString(), br.ReadBoolean()));
+                cell.Tiles.Push(new TileSprite(br.ReadString(), br.ReadBoolean()));
 
             return cell;
         }

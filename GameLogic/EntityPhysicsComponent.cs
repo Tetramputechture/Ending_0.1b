@@ -1,5 +1,6 @@
 ﻿using System;
 using Ending.Component;
+using Ending.Utils;
 using SFML.Graphics;
 using SFML.System;
 
@@ -7,8 +8,6 @@ namespace Ending.GameLogic
 {
     public class EntityPhysicsComponent : IPhysicsComponent
     {
-        private const float Sqrt2 = 1.4142135624f;
-
         private FloatRect _tileBounds = new FloatRect(0, 0, 32, 32);
 
         public void Update(Entity entity, Map map)
@@ -19,9 +18,7 @@ namespace Ending.GameLogic
 
             // if entity is moving diagonally, divide vector by sqrt 2
             if (entity.Velocity.X != 0 && entity.Velocity.Y != 0)
-            {
-                entity.Velocity /= Sqrt2;
-            }
+                entity.Velocity /= MathUtils.SqrtTwo;
 
             entity.Position += entity.Velocity * Game.DeltaTime.AsSeconds();
 
