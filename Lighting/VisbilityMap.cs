@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Ending.Utils;
 using SFML.Graphics;
 using SFML.System;
@@ -11,29 +9,31 @@ namespace Ending.Lighting
 {
     public class VisbilityMap
     {
-        public Vector2f Center { get; private set; }
+        private Vector2f _center;
 
         public void SetCenter(Vector2f center)
         {
-            if (center.X == Center.X && center.Y == Center.Y) return;
+            if (center.X == _center.X && center.Y == _center.Y) return;
 
-            Center = center;
+            _center = center;
             _boundsNeedUpdate = true;
         }
 
-        public float Radius { get; private set; }
+        private float _radius;
 
         public void SetRadius(float radius)
         {
-            if (radius == Radius) return;
+            if (radius == _radius) return;
 
-            Radius = radius;
+            _radius = radius;
             _boundsNeedUpdate = true;
         }
-       
+
         private readonly List<Segment> _segments;
 
         private readonly Segment[] _bounds;
+
+        private FloatRect _boundRect;
 
         private bool _boundsNeedUpdate;
 
@@ -43,14 +43,18 @@ namespace Ending.Lighting
 
         public VisbilityMap(Vector2f center, float radius)
         {
-            Center = center;
-            Radius = radius;
+            _center = center;
+            _radius = radius;
 
             _segments = new List<Segment>();
 
             _bounds = new Segment[4];
 
+            _boundRect = new FloatRect();
+
             _boundsNeedUpdate = true;
+
+            ComputeBoundaries();
 
             _visMesh = new VertexArray(PrimitiveType.TrianglesFan);
 
@@ -87,7 +91,7 @@ namespace Ending.Lighting
             var angles = new List<float>();
             foreach (
                 var fAngle in
-                    points.Select(p => Math.Atan2(p.Y - Center.Y, p.X - Center.X)).Select(angle => (float)angle))
+                    points.Select(p => Math.Atan2(p.Y - _center.Y, p.X - _center.X)).Select(angle => (float) angle))
             {
                 angles.Add(fAngle - 0.0001f);
                 angles.Add(fAngle);
@@ -101,25 +105,25 @@ namespace Ending.Lighting
                 var dx = Math.Cos(angle);
                 var dy = Math.Sin(angle);
 
-                var rayStart = Center;
-                var rayEnd = new Vector2f(Center.X + (float)dx, Center.Y + (float)dy);
+                var rayStart = _center;
+                var rayEnd = new Vector2f(_center.X + (float) dx, _center.Y + (float) dy);
 
                 // find closest intersection
                 Ray closestIntersect = null;
 
-                foreach (var s in _segments)
-                {
-                    var intersect = MathUtils.GetIntersection(rayStart, rayEnd, s.Start, s.End);
-                    if (intersect == null) continue;
-
-                    if (closestIntersect == null || intersect.Length < closestIntersect.Length)
-                        closestIntersect = intersect;
-                }
-
-                foreach (var intersect in _bounds.Select(s => MathUtils.GetIntersection(rayStart, rayEnd, s.Start, s.End)).Where(intersect => intersect != null).Where(intersect => closestIntersect == null || intersect.Length < closestIntersect.Length))
-                {
+                foreach (
+                    var intersect in
+                        _segments.Select(s => MathUtils.GetIntersection(rayStart, rayEnd, s.Start, s.End))
+                            .Where(intersect => intersect != null)
+                            .Where(intersect => closestIntersect == null || intersect.Length < closestIntersect.Length))
                     closestIntersect = intersect;
-                }
+
+                foreach (
+                    var intersect in
+                        _bounds.Select(s => MathUtils.GetIntersection(rayStart, rayEnd, s.Start, s.End))
+                            .Where(intersect => intersect != null)
+                            .Where(intersect => closestIntersect == null || intersect.Length < closestIntersect.Length))
+                    closestIntersect = intersect;
 
                 if (closestIntersect == null) continue;
 
@@ -133,15 +137,13 @@ namespace Ending.Lighting
 
             // make visibility mesh
             _visMesh.Clear();
-            var c = new Color(255, 255, 255, 255);
-            _visMesh.Append(new Vertex(Center, c));
+
+            _visMesh.Append(new Vertex(_center, _center));
 
             foreach (var hit in intersections)
-            {
-                _visMesh.Append(new Vertex(hit.Position, c));
-            }
+                _visMesh.Append(new Vertex(hit.Position, hit.Position));
 
-            _visMesh.Append(new Vertex(intersections[0].Position, c));
+            _visMesh.Append(new Vertex(intersections[0].Position, intersections[0].Position));
 
             _visMeshNeedsUpdate = false;
 
@@ -153,9 +155,7 @@ namespace Ending.Lighting
         public void TraceIntersectionLines(RenderTarget target)
         {
             for (uint i = 0; i < _visMesh.VertexCount; i++)
-            {
-                TraceLine(target, Center.X, Center.Y, _visMesh[i].Position.X, _visMesh[i].Position.Y);
-            }
+                TraceLine(target, _center.X, _center.Y, _visMesh[i].Position.X, _visMesh[i].Position.Y);
         }
 
         public void TraceLine(RenderTarget rt, float x0, float y0, float x1, float y1)
@@ -182,9 +182,9 @@ namespace Ending.Lighting
         {
             _segments.Add(new Segment(start, end));
             _visMeshNeedsUpdate = true;
-        } 
+        }
 
-        public void AddRectangleOccluder(FloatRect rect) 
+        public void AddRectangleOccluder(FloatRect rect)
         {
             var topLeft = new Vector2f(rect.Left, rect.Top);
             var topRight = new Vector2f(rect.Left + rect.Width, rect.Top);
@@ -206,10 +206,10 @@ namespace Ending.Lighting
 
         private void ComputeBoundaries()
         {
-            var topLeft = new Vector2f(Center.X - Radius, Center.Y - Radius);
-            var topRight = new Vector2f(Center.X + Radius, Center.Y - Radius);
-            var bottomRight = new Vector2f(Center.X + Radius, Center.Y + Radius);
-            var bottomLeft = new Vector2f(Center.X - Radius, Center.Y + Radius);
+            var topLeft = new Vector2f(_center.X - _radius, _center.Y - _radius);
+            var topRight = new Vector2f(_center.X + _radius, _center.Y - _radius);
+            var bottomRight = new Vector2f(_center.X + _radius, _center.Y + _radius);
+            var bottomLeft = new Vector2f(_center.X - _radius, _center.Y + _radius);
 
             // top
             _bounds[0] = new Segment(topLeft, topRight);
@@ -222,6 +222,8 @@ namespace Ending.Lighting
 
             // left
             _bounds[3] = new Segment(bottomLeft, topLeft);
+
+            _boundRect = new FloatRect(topLeft.X, topLeft.Y, Math.Abs(topRight.X - topLeft.X), Math.Abs(bottomRight.Y - topRight.Y));
 
             _visMeshNeedsUpdate = true;
         }

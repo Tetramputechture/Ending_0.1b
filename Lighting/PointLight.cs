@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using Ending.SpriteTools;
+﻿using System.IO;
+using Ending.GameState;
 using SFML.Graphics;
 using SFML.System;
 
@@ -10,28 +7,52 @@ namespace Ending.Lighting
 {
     public class PointLight : Drawable
     {
-        public Vector2f Position;
+        public Vector2f Position { get; private set; }
+
+        public void SetPosition(Vector2f position)
+        {
+            if (position.X == Position.X && position.Y == Position.Y) return;
+
+            Position = position;
+            VisMap.SetCenter(Position);
+        }
 
         public Color Color;
 
-        public float Radius;
+        public float Radius { get; private set; }
+
+        public void SetRadius(float radius)
+        {
+            if (radius == Radius) return;
+
+            Radius = radius;
+            VisMap.SetRadius(Radius);
+        }
 
         public float Power;
 
+        public Color AmbientLightColor;
+
         public readonly VisbilityMap VisMap;
 
-        private readonly Shader shader;
+        private readonly Shader _shader;
 
-        public PointLight()
+        public PointLight() : this(Color.White, 1.0f, 32, new Vector2f())
         {
-            Position = new Vector2f();
-            Color = new Color();
-            Radius = 0;
-            Power = 1;
+        }
+
+        public PointLight(Color color, float power, float radius, Vector2f position)
+        {
+            Position = position;
+            Color = color;
+            Power = power;
+            Radius = radius;
 
             VisMap = new VisbilityMap(Position, Radius);
 
-            shader = new Shader("shaders/lightShader.vert", "shaders/lightShader.frag");
+            _shader = new Shader("shaders/lightShader.vert", "shaders/lightShader.frag");
+
+            AmbientLightColor = Color.White;
         }
 
         public void Draw(RenderTarget target, RenderStates states)
@@ -39,12 +60,22 @@ namespace Ending.Lighting
             VisMap.SetCenter(Position);
             VisMap.SetRadius(Radius);
 
-            shader.SetParameter("lightPosition", Position);
-            shader.SetParameter("lightColor", Color.Red);
-            shader.SetParameter("lightRadius", Radius);
+            _shader.SetParameter("lightPosition", Position);
+            _shader.SetParameter("lightColor", Color);
+            _shader.SetParameter("lightRadius", Radius);
+            _shader.SetParameter("ambientLightColor", AmbientLightColor);
 
-            target.Draw(VisMap.GetVisMesh(), new RenderStates(shader));
-            //VisMap.TraceIntersectionLines(target);
+            var newStates = new RenderStates(states)
+            {
+                BlendMode = BlendMode.Multiply,
+                Shader = _shader
+            };
+
+            target.Draw(VisMap.GetVisMesh(), newStates);
+
+            if (!State.ShowRaycastingLines) return;
+
+            VisMap.TraceIntersectionLines(target);
         }
 
         public void Write(BinaryWriter bw)

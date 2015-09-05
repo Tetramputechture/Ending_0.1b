@@ -6,6 +6,8 @@
 
         public static bool ShowEntityBoundingBoxes;
 
+        public static bool ShowRaycastingLines;
+
         public static bool Open;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Ending.GameLogic;
 using Ending.GameWindow;
+using Ending.Input;
 using Ending.UI;
 using SFML.Graphics;
 using SFML.System;
@@ -54,6 +55,9 @@ namespace Ending.GameState
                 case Keyboard.Key.F:
                     _fpsToggle = !_fpsToggle;
                     break;
+                case Keyboard.Key.R:
+                    State.ShowRaycastingLines = !State.ShowRaycastingLines;
+                    break;
 
             }
         }
@@ -83,6 +87,8 @@ namespace Ending.GameState
             target.Clear(Color.Black);
 
             target.SetView(_view);
+
+            _game._mouseLight.SetPosition(target.MapPixelToCoords(InputHandler.MousePosition));
             _game.Map.Draw(target, states);
             if (_fpsToggle)
                 _msFLabel.Draw(target, states);

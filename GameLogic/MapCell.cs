@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Ending.GameLogic.DungeonTools;
@@ -31,7 +30,7 @@ namespace Ending.GameLogic
         public void LightPass(Color color)
         {
             foreach (var t in Tiles.Where(t => t.LightingEnabled))
-                t.Color = color;
+                t.AmbientColor = color;
         }
 
         public void Draw(RenderTarget target, RenderStates states)
