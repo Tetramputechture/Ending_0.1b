@@ -35,7 +35,7 @@ namespace Ending.GameState
             }
         }
 
-        private void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
+        protected virtual void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
         {
             foreach (var w in Widgets)
             {

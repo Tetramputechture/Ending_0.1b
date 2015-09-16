@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Schema;
 using Ending.Utils;
 using SFML.Graphics;
 using SFML.System;
@@ -21,17 +22,22 @@ namespace Ending.Lighting
 
         private float _radius;
 
+        private float _maxRayDistance;
+
         public void SetRadius(float radius)
         {
             if (radius == _radius) return;
 
             _radius = radius;
+            _maxRayDistance = (float) Math.Sqrt(2*(radius*radius)) + 0.5f;
             _boundsNeedUpdate = true;
         }
 
         private readonly List<Segment> _segments;
 
-        private readonly Segment[] _bounds;
+        private readonly List<Segment> _bounds;
+
+        private List<Segment> _visibleSegments; 
 
         private FloatRect _boundRect;
 
@@ -45,10 +51,13 @@ namespace Ending.Lighting
         {
             _center = center;
             _radius = radius;
+            _maxRayDistance = (float)Math.Sqrt(2 * (radius * radius)) + 0.5f;
 
             _segments = new List<Segment>();
 
-            _bounds = new Segment[4];
+            _bounds = new List<Segment>(new Segment[4]);
+
+            _visibleSegments = new List<Segment>();
 
             _boundRect = new FloatRect();
 
@@ -73,32 +82,56 @@ namespace Ending.Lighting
             if (!_visMeshNeedsUpdate)
                 return _visMesh;
 
-            // get all unique endpoints
+            // add all segments to a temp list
+            _visibleSegments = new List<Segment>(_segments);
+
+            // get all unique VISIBLE segments' endpoints + bound endpoints
             var points = new HashSet<Vector2f>();
+            for (var i = _visibleSegments.Count - 1; i >= 0; i--)
+            {
+                var s = _visibleSegments[i];
+
+                var edge = s.Start - s.End;
+                var normal = new Vector2f(edge.Y, -edge.X);
+
+                // is the segment visible from the ray origin?
+                var distVector = s.End - _center;
+
+                var dot = normal.Dot(distVector);
+
+                if (dot > 0 && distVector.Length() <= _radius)
+                {
+                    points.Add(s.Start);
+                    points.Add(s.End);
+                }
+                else
+                {
+                    _visibleSegments.RemoveAt(i);
+                }
+            }
+
+            // add bounding points
             foreach (var s in _bounds)
             {
                 points.Add(s.Start);
                 points.Add(s.End);
             }
 
-            foreach (var s in _segments)
-            {
-                points.Add(s.Start);
-                points.Add(s.End);
-            }
+            // add bounding segments to visible segments
+            _visibleSegments.AddRange(_bounds);
 
             // get all angles
             var angles = new List<float>();
             foreach (
-                var fAngle in
+                var angle in
                     points.Select(p => Math.Atan2(p.Y - _center.Y, p.X - _center.X)).Select(angle => (float) angle))
             {
-                angles.Add(fAngle - 0.0001f);
-                angles.Add(fAngle);
-                angles.Add(fAngle + 0.0001f);
+                angles.Add(angle - 0.0001f);
+                angles.Add(angle);
+                angles.Add(angle + 0.0001f);
             }
 
-            // rays in all directions
+            // rays to all visible endpoints
             var intersections = new List<Ray>();
             foreach (var angle in angles)
             {
@@ -113,14 +146,8 @@ namespace Ending.Lighting
 
                 foreach (
                     var intersect in
-                        _segments.Select(s => MathUtils.GetIntersection(rayStart, rayEnd, s.Start, s.End))
-                            .Where(intersect => intersect != null)
-                            .Where(intersect => closestIntersect == null || intersect.Length < closestIntersect.Length))
-                    closestIntersect = intersect;
-
-                foreach (
-                    var intersect in
-                        _bounds.Select(s => MathUtils.GetIntersection(rayStart, rayEnd, s.Start, s.End))
+                        _visibleSegments
+                            .Select(s => MathUtils.GetIntersection(rayStart, rayEnd, s.Start, s.End))
                             .Where(intersect => intersect != null)
                             .Where(intersect => closestIntersect == null || intersect.Length < closestIntersect.Length))
                     closestIntersect = intersect;
@@ -155,25 +182,34 @@ namespace Ending.Lighting
         public void TraceIntersectionLines(RenderTarget target)
         {
             for (uint i = 0; i < _visMesh.VertexCount; i++)
-                TraceLine(target, _center.X, _center.Y, _visMesh[i].Position.X, _visMesh[i].Position.Y);
+                TraceLine(target, _center.X, _center.Y, _visMesh[i].Position.X, _visMesh[i].Position.Y, Color.Yellow, true);
         }
 
-        public void TraceLine(RenderTarget rt, float x0, float y0, float x1, float y1)
+        public void TraceVisibleSegments(RenderTarget target)
+        {
+            foreach (var s in _visibleSegments) 
+                TraceLine(target, s.Start.X, s.Start.Y, s.End.X, s.End.Y, Color.Yellow, false);
+        }
+
+        public void TraceLine(RenderTarget rt, float x0, float y0, float x1, float y1, Color color, bool drawEndPoint)
         {
             var line = new[]
             {
-                new Vertex(new Vector2f(x0, y0), Color.Red),
-                new Vertex(new Vector2f(x1, y1), Color.Red)
+                new Vertex(new Vector2f(x0, y0), color),
+                new Vertex(new Vector2f(x1, y1), color)
             };
 
             rt.Draw(line, PrimitiveType.Lines);
+
+            if (!drawEndPoint) return;
 
             var endPoint = new CircleShape(2)
             {
                 Origin = new Vector2f(1, 1),
                 Position = new Vector2f(x1, y1),
-                FillColor = Color.Red
+                FillColor = color
             };
+
 
             rt.Draw(endPoint);
         }

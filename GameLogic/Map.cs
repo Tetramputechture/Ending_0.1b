@@ -29,6 +29,10 @@ namespace Ending.GameLogic
 
         public Vector2f Center;
 
+        private readonly RenderTexture _lightTexture;
+
+        private readonly Sprite _lightSprite;
+
         public Map(string name, Vector2i size, int cellSize = 32)
         {
             Name = name;
@@ -58,6 +62,10 @@ namespace Ending.GameLogic
             _lights = new List<PointLight>();
 
             AmbientLightColor = Color.White;
+
+            _lightTexture = new RenderTexture((uint) (size.X * cellSize), (uint) (size.Y * cellSize));
+
+            _lightSprite = new Sprite(_lightTexture.Texture);
         }
 
         public Map(string name, int x, int y, int cellSize = 32) : this(name, new Vector2i(x, y), cellSize)
@@ -89,6 +97,28 @@ namespace Ending.GameLogic
             }
         }
 
+        public void RemoveTile(int x, int y, uint layer)
+        {
+            if (layer > 2) layer = 2;
+
+            switch (layer)
+            {
+                case 0:
+                    Layer0Cells[x, y].Clear();
+                    break;
+                case 1:
+                    Layer1Cells[x, y].Clear();
+                    foreach (var l in _lights)
+                    {
+                        l.VisMap.AddRectangleOccluder(new FloatRect(x * 32, y * 32, 32, 32));
+                    }
+                    break;
+                default:
+                    Layer2Cells[x, y].Clear();
+                    break;
+            }
+        }
+
         public void AddEntity(Entity e) => _entities.Add(e);
 
         public void AddLight(PointLight l) => _lights.Add(l);
@@ -96,8 +126,6 @@ namespace Ending.GameLogic
         public void Draw(RenderTarget target, RenderStates states)
         {
             var view = target.GetView();
-            //view.Center = Center;
-            //target.SetView(view);
 
             // get dimensions of viewing window
             var topLeft = new Vector2i((int) (view.Center.X - view.Size.X / 2f),
@@ -121,25 +149,19 @@ namespace Ending.GameLogic
             if (bottomRight.Y < Size.Y) bottomRight.Y += 2;
             if (bottomRight.Y > Size.Y) bottomRight.Y = Size.Y;
 
+            // draw world
+
             for (var x = topLeft.X; x < bottomRight.X; x++)
             {
                 for (var y = topLeft.Y; y < bottomRight.Y; y++)
                 {
                     // draw layer 0 tiles (floors, etc)
-                    Layer0Cells[x, y].LightPass(AmbientLightColor);
                     Layer0Cells[x, y].Draw(target, states);
 
                     // draw layer 1 tiles (walls, collidables)
-                    Layer1Cells[x, y].LightPass(AmbientLightColor);
                     Layer1Cells[x, y].Draw(target, states);
                 }
             }
-
-            foreach (var light in _lights)
-            {
-                light.AmbientLightColor = AmbientLightColor;
-                target.Draw(light);
-            } 
 
             // draw entities
             foreach (var e in _entities)
@@ -152,10 +174,20 @@ namespace Ending.GameLogic
                 {
                     if (Layer2Cells[x, y].IsEmpty()) continue;
 
-                    Layer2Cells[x, y].LightPass(AmbientLightColor);
                     Layer2Cells[x, y].Draw(target, states);
                 }
             }
+
+            // draw lights to light texture buffer
+            _lightTexture.Clear(AmbientLightColor);
+
+            foreach (var light in _lights)
+                _lightTexture.Draw(light);
+
+            _lightTexture.Display();
+
+            // multiply the light texture with the screen
+            _lightSprite.Draw(target, new RenderStates(BlendMode.Multiply));
         }
 
         public void Save(string filename)

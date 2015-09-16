@@ -8,6 +8,8 @@
 
         public static bool ShowRaycastingLines;
 
+        public static bool ShowVisibleSegments;
+
         public static bool Open;
     }
 }

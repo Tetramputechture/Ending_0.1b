@@ -1,4 +1,6 @@
-﻿using Ending.GameLogic;
+﻿using System;
+using Ending.GameLogic;
+using Ending.GameLogic.DungeonTools;
 using Ending.GameWindow;
 using Ending.Input;
 using Ending.UI;
@@ -58,8 +60,18 @@ namespace Ending.GameState
                 case Keyboard.Key.R:
                     State.ShowRaycastingLines = !State.ShowRaycastingLines;
                     break;
-
+                case Keyboard.Key.V:
+                    State.ShowVisibleSegments = !State.ShowVisibleSegments;
+                    break;
             }
+        }
+
+
+        protected override void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
+        {
+            var target = (RenderTarget) sender;
+            var mousePos = target.MapPixelToCoords(new Vector2i(e.X, e.Y));
+            _game.Map.AddTile(TileType.StonewallNorth, (int) mousePos.X / _game.Map.CellSize, (int)mousePos.Y / _game.Map.CellSize, 1);
         }
 
         public override void Update()
@@ -79,7 +91,7 @@ namespace Ending.GameState
                 };
             }
 
-            _msFLabel.Text.DisplayedString = "ms / frame : " + Game.DeltaTime.AsMicroseconds() / 1000f;
+            _msFLabel.Text.DisplayedString = "ms / frame : " + Math.Round(Game.DeltaTime.AsMicroseconds() / 1000f, 2);
         }
 
         public override void Draw(RenderTarget target, RenderStates states)

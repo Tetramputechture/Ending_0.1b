@@ -3,12 +3,13 @@
 uniform vec2 lightPosition;
 uniform vec4 lightColor;
 uniform float lightRadius;
-uniform vec4 ambientLightColor;
 
 void main() 
 {
-    vec3 distance = vec3(gl_TexCoord[0].xy - lightPosition.xy, 5);
+    vec2 distance = gl_TexCoord[0].xy - lightPosition.xy;
 
-    float lightPower = 1 - length(distance) / lightRadius; // Light power between 0 and 1, where 0 is none and 1 is fullbright
+    float lightPower = 1 - length(distance) / lightRadius;
+    
+    if (lightPower <= 0) discard;
     gl_FragColor = lightColor * lightPower;
 }

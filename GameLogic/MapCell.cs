@@ -19,18 +19,17 @@ namespace Ending.GameLogic
             Tiles.Push(new TileSprite(type));
         }
 
+        public void Clear()
+        {
+            Tiles.Clear();
+        }
+
         public bool IsEmpty() => Tiles.Count == 0;
 
         public void SetPosition(int x, int y)
         {
             foreach (var t in Tiles)
                 t.Position = new Vector2f(x, y);
-        }
-
-        public void LightPass(Color color)
-        {
-            foreach (var t in Tiles.Where(t => t.LightingEnabled))
-                t.AmbientColor = color;
         }
 
         public void Draw(RenderTarget target, RenderStates states)

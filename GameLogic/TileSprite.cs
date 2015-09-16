@@ -11,8 +11,6 @@ namespace Ending.GameLogic
 
         public readonly string TextureName;
 
-        public Color AmbientColor;
-
         public TileSprite(TileType type) : this (type, type.LightingEnabled)
         {
         }
@@ -26,20 +24,6 @@ namespace Ending.GameLogic
             Texture = new Texture(textureName);
             TextureName = textureName;
             LightingEnabled = lightingEnabled;
-        }
-
-        public new void Draw(RenderTarget target, RenderStates states)
-        {
-            TileShader.SetParameter("texture", Shader.CurrentTexture);
-            TileShader.SetParameter("ambientLightColor", AmbientColor);
-
-            var newStates = new RenderStates(states)
-            {
-                BlendMode = BlendMode.Add,
-                Shader = TileShader
-            };
-
-            base.Draw(target, newStates);
         }
     }
 }

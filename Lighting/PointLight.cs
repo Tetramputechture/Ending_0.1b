@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Ending.GameState;
+using Ending.GameWindow;
 using SFML.Graphics;
 using SFML.System;
 
@@ -31,8 +32,6 @@ namespace Ending.Lighting
 
         public float Power;
 
-        public Color AmbientLightColor;
-
         public readonly VisbilityMap VisMap;
 
         private readonly Shader _shader;
@@ -51,8 +50,6 @@ namespace Ending.Lighting
             VisMap = new VisbilityMap(Position, Radius);
 
             _shader = new Shader("shaders/lightShader.vert", "shaders/lightShader.frag");
-
-            AmbientLightColor = Color.White;
         }
 
         public void Draw(RenderTarget target, RenderStates states)
@@ -63,19 +60,20 @@ namespace Ending.Lighting
             _shader.SetParameter("lightPosition", Position);
             _shader.SetParameter("lightColor", Color);
             _shader.SetParameter("lightRadius", Radius);
-            _shader.SetParameter("ambientLightColor", AmbientLightColor);
 
             var newStates = new RenderStates(states)
             {
-                BlendMode = BlendMode.Multiply,
+                BlendMode = BlendMode.Add,
                 Shader = _shader
             };
 
             target.Draw(VisMap.GetVisMesh(), newStates);
 
-            if (!State.ShowRaycastingLines) return;
+            if (State.ShowRaycastingLines) 
+                VisMap.TraceIntersectionLines(target);
 
-            VisMap.TraceIntersectionLines(target);
+            if (State.ShowVisibleSegments) 
+                VisMap.TraceVisibleSegments(target);
         }
 
         public void Write(BinaryWriter bw)

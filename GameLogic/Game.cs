@@ -49,9 +49,10 @@ namespace Ending.GameLogic
 
             _playerLight = new PointLight(Color.White, 1.0f, 128, _player.Position);
 
-            _mouseLight = new PointLight(Color.White, 1.0f, 512, (Vector2f) InputHandler.MousePosition);
+            _mouseLight = new PointLight(Color.Red, 1.0f, 128, (Vector2f) InputHandler.MousePosition);
 
             Map.AddLight(_mouseLight);
+            Map.AddLight(_playerLight);
 
             Map.AddTile(TileType.StonewallNorth, 22, 18, 1);
             Map.AddTile(TileType.StonewallNorth, 22, 14, 1);
@@ -66,11 +67,13 @@ namespace Ending.GameLogic
         public void Update()
         {
             Map.Center = _player.Position;
+            _playerLight.SetPosition(_player.Position);
             View.Center = Map.Center;
             if (_mouseLight.Radius <= 512 && InputHandler.IsKeyPressed(Keyboard.Key.Up))
             {
                 _mouseLight.SetRadius(_mouseLight.Radius + 2);
-            } else if (_mouseLight.Radius >= 0 && InputHandler.IsKeyPressed(Keyboard.Key.Down))
+            }
+            else if (_mouseLight.Radius >= 0 && InputHandler.IsKeyPressed(Keyboard.Key.Down))
             {
                 _mouseLight.SetRadius(_mouseLight.Radius - 2);
             }
